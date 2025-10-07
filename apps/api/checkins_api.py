@@ -8,10 +8,12 @@ from pydantic import BaseModel, Field
 from datetime import datetime, timedelta, date
 from typing import Optional
 from uuid import UUID
+import pytz
 
 from models import CheckIn, Client, Membership, CheckInMethod
 from core.database import AsyncSessionLocal
 from auth_workaround import get_current_user, User
+from core.config import settings
 
 router = APIRouter(prefix="/checkins", tags=["Check-ins"])
 
@@ -127,10 +129,21 @@ async def get_checkin_stats(
 ):
     """Get check-in statistics"""
     try:
-        now = datetime.utcnow()
-        today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
-        week_start = today_start - timedelta(days=today_start.weekday())
-        month_start = today_start.replace(day=1)
+        # Get current time in the configured timezone
+        tz = pytz.timezone(settings.TZ)
+        now_local = datetime.now(tz)
+
+        # Get start of today in local timezone, then convert to UTC for database queries
+        today_start_local = now_local.replace(hour=0, minute=0, second=0, microsecond=0)
+        today_start = today_start_local.astimezone(pytz.UTC)
+
+        # Week start (Monday)
+        week_start_local = today_start_local - timedelta(days=today_start_local.weekday())
+        week_start = week_start_local.astimezone(pytz.UTC)
+
+        # Month start
+        month_start_local = today_start_local.replace(day=1)
+        month_start = month_start_local.astimezone(pytz.UTC)
 
         # Today's check-ins
         today_result = await db.execute(
