@@ -1,8 +1,9 @@
 from pydantic_settings import BaseSettings
-from pydantic import Field
+from pydantic import Field, field_validator
 from typing import List
 import yaml
 import os
+import json
 
 
 class Settings(BaseSettings):
@@ -32,6 +33,18 @@ class Settings(BaseSettings):
 
     # CORS
     CORS_ORIGINS: List[str] = Field(default=["http://localhost:3000", "http://localhost:5173"], description="CORS allowed origins")
+
+    @field_validator('CORS_ORIGINS', mode='before')
+    @classmethod
+    def parse_cors_origins(cls, v):
+        """Parse CORS_ORIGINS from string if needed"""
+        if isinstance(v, str):
+            try:
+                return json.loads(v)
+            except json.JSONDecodeError:
+                # Try comma-separated
+                return [origin.strip() for origin in v.split(',')]
+        return v
 
     # Zapier Integration
     ZAPIER_CATCH_HOOK_URL: str = Field(default="", description="Zapier webhook URL")
