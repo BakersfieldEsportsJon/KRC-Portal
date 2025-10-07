@@ -1,7 +1,7 @@
 import { useParams } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from 'react-query'
 import apiService from '../services/api'
-import { Mail, Phone, Calendar, Tag, User, Briefcase, FileText, Languages, LogIn, X, Edit2 } from 'lucide-react'
+import { Mail, Phone, Calendar, Tag, User, Briefcase, FileText, Languages, LogIn, X, Edit2, AlertTriangle, Clock } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { useAuth } from '../hooks/useAuth'
 import { useState } from 'react'
@@ -51,6 +51,55 @@ export default function ClientDetailPage() {
   const handleCheckIn = () => {
     checkInMutation.mutate()
   }
+
+  // Calculate membership status details
+  const getMembershipStatusInfo = () => {
+    if (!membership) return null
+
+    const now = new Date()
+    const endsOn = new Date(membership.ends_on)
+    const daysUntilExpiry = Math.ceil((endsOn.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
+
+    if (membership.status === 'expired' || daysUntilExpiry < 0) {
+      return {
+        status: 'expired',
+        label: 'Expired',
+        color: 'bg-red-100 text-red-800 border-red-200',
+        message: 'Membership has expired',
+        daysUntilExpiry
+      }
+    } else if (daysUntilExpiry <= 14) {
+      return {
+        status: 'expiring',
+        label: 'Expiring Soon',
+        color: 'bg-yellow-100 text-yellow-800 border-yellow-200',
+        message: `Expires in ${daysUntilExpiry} day${daysUntilExpiry !== 1 ? 's' : ''}`,
+        daysUntilExpiry
+      }
+    } else {
+      return {
+        status: 'active',
+        label: 'Active',
+        color: 'bg-green-100 text-green-800 border-green-200',
+        message: `Expires ${endsOn.toLocaleDateString()}`,
+        daysUntilExpiry
+      }
+    }
+  }
+
+  // Calculate days since last check-in
+  const getDaysSinceLastCheckIn = () => {
+    if (!checkIns || checkIns.length === 0) return null
+
+    const lastCheckIn = new Date(checkIns[0].happened_at)
+    const now = new Date()
+    const daysSince = Math.floor((now.getTime() - lastCheckIn.getTime()) / (1000 * 60 * 60 * 24))
+
+    return daysSince
+  }
+
+  const membershipInfo = getMembershipStatusInfo()
+  const daysSinceLastCheckIn = getDaysSinceLastCheckIn()
 
   const updateNotesMutation = useMutation(
     (notes: string) => apiService.updateClient(id!, { notes }),
@@ -239,22 +288,66 @@ export default function ClientDetailPage() {
 
         {/* Sidebar */}
         <div className="space-y-8">
+          {/* Alert Banners */}
+          {daysSinceLastCheckIn !== null && daysSinceLastCheckIn >= 30 && (
+            <div className="card border-2 border-orange-200 bg-orange-50">
+              <div className="card-body">
+                <div className="flex items-start">
+                  <AlertTriangle className="w-5 h-5 text-orange-600 mr-3 mt-0.5" />
+                  <div>
+                    <h4 className="text-sm font-semibold text-orange-900">Inactive Client</h4>
+                    <p className="text-sm text-orange-800 mt-1">
+                      Last seen {daysSinceLastCheckIn} days ago. Consider reaching out to this client.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Last Check-in */}
+          <div className="card">
+            <div className="card-header">
+              <h3 className="text-lg font-medium text-gray-900">Last Check-in</h3>
+            </div>
+            <div className="card-body">
+              {checkIns && checkIns.length > 0 ? (
+                <div>
+                  <div className="flex items-center text-sm text-gray-600 mb-2">
+                    <Clock className="w-4 h-4 mr-2" />
+                    {new Date(checkIns[0].happened_at).toLocaleString()}
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    {checkIns[0].station || 'General'} • {checkIns[0].method === 'kiosk' ? 'Self Check-in' : 'Staff Assisted'}
+                  </div>
+                  {daysSinceLastCheckIn !== null && (
+                    <div className={`mt-2 text-xs font-medium ${
+                      daysSinceLastCheckIn >= 30 ? 'text-orange-600' :
+                      daysSinceLastCheckIn >= 14 ? 'text-yellow-600' :
+                      'text-green-600'
+                    }`}>
+                      {daysSinceLastCheckIn === 0 ? 'Today' :
+                       daysSinceLastCheckIn === 1 ? 'Yesterday' :
+                       `${daysSinceLastCheckIn} days ago`}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <p className="text-sm text-gray-500">No check-ins yet</p>
+              )}
+            </div>
+          </div>
+
           {/* Membership */}
           <div className="card">
             <div className="card-header">
               <h3 className="text-lg font-medium text-gray-900">Membership</h3>
             </div>
             <div className="card-body">
-              {membership ? (
+              {membership && membershipInfo ? (
                 <div>
-                  <div className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full mb-3 ${
-                    membership.status === 'active'
-                      ? 'bg-green-100 text-green-800'
-                      : membership.status === 'expired'
-                      ? 'bg-red-100 text-red-800'
-                      : 'bg-yellow-100 text-yellow-800'
-                  }`}>
-                    {membership.status.charAt(0).toUpperCase() + membership.status.slice(1)}
+                  <div className={`inline-flex px-3 py-1.5 text-sm font-semibold rounded-lg border-2 mb-3 ${membershipInfo.color}`}>
+                    {membershipInfo.label}
                   </div>
                   <div className="space-y-2 text-sm">
                     <div>
@@ -265,6 +358,13 @@ export default function ClientDetailPage() {
                     </div>
                     <div>
                       <span className="font-medium">Ends:</span> {new Date(membership.ends_on).toLocaleDateString()}
+                    </div>
+                    <div className={`pt-2 text-xs font-medium ${
+                      membershipInfo.status === 'expired' ? 'text-red-700' :
+                      membershipInfo.status === 'expiring' ? 'text-yellow-700' :
+                      'text-green-700'
+                    }`}>
+                      {membershipInfo.message}
                     </div>
                   </div>
                 </div>
@@ -284,14 +384,38 @@ export default function ClientDetailPage() {
                     <button className="btn-secondary w-full">Add Membership</button>
                   </>
                 )}
-                <button
-                  onClick={handleCheckIn}
-                  disabled={checkInMutation.isLoading}
-                  className="btn-secondary w-full flex items-center justify-center"
-                >
-                  <LogIn className="w-4 h-4 mr-2" />
-                  {checkInMutation.isLoading ? 'Checking In...' : 'Check In'}
-                </button>
+
+                {/* Enhanced Check-in Button with Status */}
+                <div className="space-y-2">
+                  <button
+                    onClick={handleCheckIn}
+                    disabled={checkInMutation.isLoading}
+                    className={`w-full flex items-center justify-center font-semibold py-2.5 px-4 rounded-lg transition-colors ${
+                      membershipInfo?.status === 'expired'
+                        ? 'bg-red-600 hover:bg-red-700 text-white'
+                        : membershipInfo?.status === 'expiring'
+                        ? 'bg-yellow-500 hover:bg-yellow-600 text-white'
+                        : 'bg-green-600 hover:bg-green-700 text-white'
+                    } disabled:opacity-50 disabled:cursor-not-allowed`}
+                  >
+                    <LogIn className="w-4 h-4 mr-2" />
+                    {checkInMutation.isLoading ? 'Checking In...' : 'Check In Client'}
+                  </button>
+
+                  {/* Status message below button */}
+                  {membershipInfo && (
+                    <div className={`text-xs text-center font-medium ${
+                      membershipInfo.status === 'expired' ? 'text-red-700' :
+                      membershipInfo.status === 'expiring' ? 'text-yellow-700' :
+                      'text-green-700'
+                    }`}>
+                      {membershipInfo.status === 'expired' && '⚠️ Membership Expired'}
+                      {membershipInfo.status === 'expiring' && `⚠️ Expiring in ${membershipInfo.daysUntilExpiry} days`}
+                      {membershipInfo.status === 'active' && '✓ Active Membership'}
+                    </div>
+                  )}
+                </div>
+
                 <button
                   onClick={openNotesModal}
                   className="btn-secondary w-full flex items-center justify-center"
