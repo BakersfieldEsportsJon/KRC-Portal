@@ -381,9 +381,9 @@ export default function ClientsPage() {
 
       {/* Add Client Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-            <div className="flex justify-between items-center mb-4">
+        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg w-full max-w-2xl max-h-[90vh] flex flex-col">
+            <div className="flex justify-between items-center p-6 border-b border-gray-200">
               <h2 className="text-xl font-semibold">Add New Client</h2>
               <button
                 onClick={() => setShowAddModal(false)}
@@ -393,8 +393,9 @@ export default function ClientsPage() {
               </button>
             </div>
 
-            <form onSubmit={handleSubmit}>
-              <div className="space-y-4">
+            <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden">
+              <div className="overflow-y-auto p-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
                     First Name *
@@ -529,7 +530,7 @@ export default function ClientsPage() {
                   />
                 </div>
 
-                <div className="col-span-2">
+                <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-gray-700">
                     Notes
                   </label>
@@ -540,9 +541,10 @@ export default function ClientsPage() {
                     rows={3}
                   />
                 </div>
+                </div>
               </div>
 
-              <div className="mt-6 flex justify-end space-x-3">
+              <div className="border-t border-gray-200 p-6 flex justify-end space-x-3 bg-gray-50">
                 <button
                   type="button"
                   onClick={() => setShowAddModal(false)}
@@ -641,9 +643,9 @@ export default function ClientsPage() {
 
       {/* Edit Client Modal */}
       {showEditModal && editingClient && (
-        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-4">
+        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg w-full max-w-2xl max-h-[90vh] flex flex-col">
+            <div className="flex justify-between items-center p-6 border-b border-gray-200">
               <h2 className="text-xl font-semibold">Edit Client</h2>
               <button
                 onClick={() => {
@@ -656,8 +658,9 @@ export default function ClientsPage() {
               </button>
             </div>
 
-            <form onSubmit={handleEditSubmit}>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <form onSubmit={handleEditSubmit} className="flex flex-col flex-1 overflow-hidden">
+              <div className="overflow-y-auto p-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
                     First Name *
@@ -803,9 +806,10 @@ export default function ClientsPage() {
                     rows={3}
                   />
                 </div>
+                </div>
               </div>
 
-              <div className="mt-6 flex justify-end space-x-3">
+              <div className="border-t border-gray-200 p-6 flex justify-end space-x-3 bg-gray-50">
                 <button
                   type="button"
                   onClick={() => {
