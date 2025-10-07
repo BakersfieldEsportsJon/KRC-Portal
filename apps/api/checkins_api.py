@@ -47,7 +47,10 @@ class CheckInStats(BaseModel):
     today: int
     this_week: int
     this_month: int
-    total: int
+    unique_clients_today: int
+    unique_clients_week: int
+    unique_clients_month: int
+    popular_stations: dict
 
 
 # Routes
@@ -129,10 +132,6 @@ async def get_checkin_stats(
         week_start = today_start - timedelta(days=today_start.weekday())
         month_start = today_start.replace(day=1)
 
-        # Total check-ins
-        total_result = await db.execute(select(func.count(CheckIn.id)))
-        total = total_result.scalar() or 0
-
         # Today's check-ins
         today_result = await db.execute(
             select(func.count(CheckIn.id)).where(CheckIn.happened_at >= today_start)
@@ -151,11 +150,43 @@ async def get_checkin_stats(
         )
         this_month = month_result.scalar() or 0
 
+        # Unique clients today
+        unique_today_result = await db.execute(
+            select(func.count(func.distinct(CheckIn.client_id))).where(CheckIn.happened_at >= today_start)
+        )
+        unique_clients_today = unique_today_result.scalar() or 0
+
+        # Unique clients this week
+        unique_week_result = await db.execute(
+            select(func.count(func.distinct(CheckIn.client_id))).where(CheckIn.happened_at >= week_start)
+        )
+        unique_clients_week = unique_week_result.scalar() or 0
+
+        # Unique clients this month
+        unique_month_result = await db.execute(
+            select(func.count(func.distinct(CheckIn.client_id))).where(CheckIn.happened_at >= month_start)
+        )
+        unique_clients_month = unique_month_result.scalar() or 0
+
+        # Popular stations (this month)
+        stations_result = await db.execute(
+            select(CheckIn.station, func.count(CheckIn.id).label('count'))
+            .where(CheckIn.happened_at >= month_start)
+            .where(CheckIn.station.isnot(None))
+            .group_by(CheckIn.station)
+            .order_by(func.count(CheckIn.id).desc())
+            .limit(10)
+        )
+        popular_stations = {station: count for station, count in stations_result.all()}
+
         return CheckInStats(
             today=today,
             this_week=this_week,
             this_month=this_month,
-            total=total
+            unique_clients_today=unique_clients_today,
+            unique_clients_week=unique_clients_week,
+            unique_clients_month=unique_clients_month,
+            popular_stations=popular_stations
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to get check-in stats: {str(e)}")
