@@ -17,7 +17,7 @@ modules:
       auto_status_updates: true
 
   kiosk:
-    enabled: true
+    enabled: false  # Disabled - ORM conflicts with workaround APIs
     description: "Self-service check-in kiosk"
     features:
       qr_code_checkin: true
