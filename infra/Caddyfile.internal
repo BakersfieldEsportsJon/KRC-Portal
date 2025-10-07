@@ -1,0 +1,73 @@
+# Internal HTTPS Configuration (no Let's Encrypt)
+{
+    # Disable automatic HTTPS
+    auto_https off
+    # Disable admin API
+    admin off
+}
+
+# Admin interface
+https://krc.bec.local {
+    tls /etc/caddy/certs/bec.local.crt /etc/caddy/certs/bec.local.key
+
+    # API routes
+    handle /api/* {
+        reverse_proxy api:8000
+    }
+
+    # All other routes go to the React app
+    handle {
+        reverse_proxy web:5173
+    }
+
+    # Security headers
+    header {
+        # Prevent clickjacking
+        X-Frame-Options DENY
+        # Prevent MIME sniffing
+        X-Content-Type-Options nosniff
+        # XSS protection
+        X-XSS-Protection "1; mode=block"
+        # Referrer policy
+        Referrer-Policy "strict-origin-when-cross-origin"
+    }
+
+    # Gzip compression
+    encode gzip
+
+    # Logs
+    log {
+        output file /var/log/caddy/krc.log
+        format json
+    }
+}
+
+# Kiosk interface
+https://kiosk.bec.local {
+    tls /etc/caddy/certs/bec.local.crt /etc/caddy/certs/bec.local.key
+
+    # API routes
+    handle /api/* {
+        reverse_proxy api:8000
+    }
+
+    # Kiosk routes
+    handle {
+        reverse_proxy web:5173
+    }
+
+    # Security headers
+    header {
+        X-Frame-Options DENY
+        X-Content-Type-Options nosniff
+        X-XSS-Protection "1; mode=block"
+        Referrer-Policy "strict-origin-when-cross-origin"
+    }
+
+    encode gzip
+
+    log {
+        output file /var/log/caddy/kiosk.log
+        format json
+    }
+}

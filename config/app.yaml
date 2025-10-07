@@ -1,0 +1,43 @@
+app:
+  name: "BEC CRM System"
+  version: "1.0.0"
+  timezone: "America/Los_Angeles"
+
+auth:
+  jwt_algorithm: "HS256"
+  access_token_expire_minutes: 30
+  refresh_token_expire_days: 7
+  password_hash_algorithm: "argon2id"
+
+database:
+  pool_size: 10
+  max_overflow: 20
+  pool_timeout: 30
+
+redis:
+  default_timeout: 5
+
+api:
+  title: "BEC CRM API"
+  description: "Customer Relationship Management and Check-in System for Bakersfield eSports Center"
+  version: "v1"
+  prefix: "/api/v1"
+
+messaging:
+  zapier:
+    retry_attempts: 3
+    retry_delay_seconds: 5
+    dead_letter_threshold: 5
+  textla:
+    sender: "+18668849961"
+
+ggleap:
+  groups:
+    active: "KRC Unlimited"
+    expired: "Kern Regional Center"
+  sync_enabled: true
+
+schedules:
+  membership_expiry_check: "0 9 * * *"  # Daily at 9 AM
+  monthly_checkin_reminder: "0 10 15 * *"  # 15th of month at 10 AM
+  krc_meetup_announce: "0 10 * * 2#2"  # 2nd Tuesday at 10 AM

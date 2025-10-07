@@ -1,0 +1,26 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir:*)",
+      "Bash(test:*)",
+      "Bash(docker compose:*)",
+      "Bash(curl http://localhost:8000/api/v1/healthz)",
+      "Bash(curl:*)",
+      "Bash(python:*)",
+      "Bash(find:*)",
+      "Bash(while read file)",
+      "Bash(do sed -i '/__tablename__/a\\    __table_args__ = {'\"''''\"'extend_existing'\"''''\"': True}' \"$file\")",
+      "Bash(docker-compose logs:*)",
+      "Bash(docker-compose restart:*)",
+      "Bash(dir)",
+      "Bash(make:*)",
+      "Bash(docker:*)",
+      "Bash(dir /b \"C:\\Users\\Jonat\\CRM\\apps\\api\\alembic\\versions\")",
+      "Bash(dir:*)",
+      "Bash(git init:*)",
+      "Bash(git add:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

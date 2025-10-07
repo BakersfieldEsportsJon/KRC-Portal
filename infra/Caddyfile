@@ -1,0 +1,73 @@
+# Production Caddyfile with Let's Encrypt
+{
+    email admin@bakersfieldesports.com
+}
+
+# Admin interface
+krc.bakersfieldesports.com {
+    # API routes
+    handle /api/* {
+        reverse_proxy api:8000
+    }
+
+    # All other routes go to the React app
+    handle {
+        reverse_proxy web:5173
+    }
+
+    # Security headers
+    header {
+        # HSTS
+        Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+        # Prevent clickjacking
+        X-Frame-Options DENY
+        # Prevent MIME sniffing
+        X-Content-Type-Options nosniff
+        # XSS protection
+        X-XSS-Protection "1; mode=block"
+        # Referrer policy
+        Referrer-Policy "strict-origin-when-cross-origin"
+        # CSP
+        Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https:; font-src 'self' data:;"
+    }
+
+    # Gzip compression
+    encode gzip
+
+    # Logs
+    log {
+        output file /var/log/caddy/krc.log
+        format json
+    }
+}
+
+# Kiosk interface
+kiosk.bakersfieldesports.com {
+    # API routes
+    handle /api/* {
+        reverse_proxy api:8000
+    }
+
+    # Kiosk routes - redirect to React app with kiosk path
+    handle {
+        reverse_proxy web:5173
+    }
+
+    # Security headers (same as admin but potentially more restrictive for kiosk)
+    header {
+        Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+        X-Frame-Options DENY
+        X-Content-Type-Options nosniff
+        X-XSS-Protection "1; mode=block"
+        Referrer-Policy "strict-origin-when-cross-origin"
+        # More restrictive CSP for kiosk
+        Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; font-src 'self' data:;"
+    }
+
+    encode gzip
+
+    log {
+        output file /var/log/caddy/kiosk.log
+        format json
+    }
+}

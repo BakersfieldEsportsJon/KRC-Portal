@@ -1,0 +1,60 @@
+modules:
+  # Core modules - always enabled
+  core_auth:
+    enabled: false  # Disabled temporarily - using auth workaround
+    description: "Authentication and authorization system"
+
+  core_clients:
+    enabled: false  # Disabled temporarily - ORM conflicts with workaround
+    description: "Client management and profiles"
+
+  # Feature modules - can be toggled
+  memberships:
+    enabled: false  # Disabled temporarily - ORM conflicts with workaround
+    description: "Membership management and tracking"
+    features:
+      expiry_notifications: true
+      auto_status_updates: true
+
+  kiosk:
+    enabled: false  # Disabled temporarily - ORM conflicts with workaround
+    description: "Self-service check-in kiosk"
+    features:
+      qr_code_checkin: true
+      phone_lookup: true
+
+  messaging:
+    enabled: false  # FUTURE: Add Zapier/Textla integration later
+    description: "Zapier and Textla messaging integration"
+    features:
+      zapier_webhooks: true
+      sms_notifications: true
+      email_notifications: true
+    providers:
+      zapier:
+        enabled: false
+      textla:
+        enabled: false
+
+  ggleap:
+    enabled: false  # FUTURE: Add ggLeap gaming center integration later
+    description: "ggLeap gaming center integration"
+    features:
+      group_sync: true
+      user_linking: true
+      auto_sync_on_status_change: true
+
+  imports:
+    enabled: false  # FUTURE: Add data import tools later
+    description: "Data import and migration tools"
+    features:
+      csv_import: true
+      bulk_operations: true
+
+  reports:
+    enabled: false  # FUTURE: Add advanced analytics later
+    description: "Analytics and reporting"
+    features:
+      membership_reports: true
+      checkin_analytics: true
+      revenue_tracking: true

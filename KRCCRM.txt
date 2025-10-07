@@ -1,0 +1,5 @@
+Add note field to client page
+Add language to client info
+Change POS to UCI
+Add filter to client list
+Add check in button on Client page

@@ -1,0 +1,1 @@
+{"access_token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjNTVkZTA2YS0wMzZjLTRkZDQtYTU3Ny1jMTc5NDcyOGNhZDAiLCJlbWFpbCI6ImFkbWluQGJha2Vyc2ZpZWxkZXNwb3J0cy5jb20iLCJyb2xlIjoiYWRtaW4iLCJleHAiOjE3NTkzNTgyNDZ9.vftyb1_Qho5P5oMbkk0gqcV0drODis580q1cgC1dSE0","token_type":"bearer","expires_in":1800}
