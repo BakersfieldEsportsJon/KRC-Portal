@@ -107,11 +107,15 @@ async def create_user(
     password_hash = pwd_context.hash(user_data.password)
 
     # Create user
+    from datetime import datetime
+    now = datetime.utcnow()
     new_user = User(
         email=user_data.email,
         password_hash=password_hash,
         role=user_data.role,
-        is_active=user_data.is_active
+        is_active=user_data.is_active,
+        created_at=now,
+        updated_at=now
     )
 
     db.add(new_user)
