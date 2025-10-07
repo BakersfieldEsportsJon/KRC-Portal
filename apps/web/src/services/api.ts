@@ -221,6 +221,17 @@ class ApiService {
   async deleteUser(id: string): Promise<void> {
     await this.api.delete(`/users/${id}`)
   }
+
+  // Client Notes
+  async getClientNotes(clientId: string): Promise<any[]> {
+    const response = await this.api.get(`/clients/${clientId}/notes`)
+    return response.data
+  }
+
+  async createClientNote(clientId: string, note: string): Promise<any> {
+    const response = await this.api.post(`/clients/${clientId}/notes`, { note })
+    return response.data
+  }
 }
 
 export const apiService = new ApiService()

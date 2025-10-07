@@ -10,8 +10,7 @@ export default function ClientDetailPage() {
   const { id } = useParams<{ id: string }>()
   const queryClient = useQueryClient()
   const { isAdmin } = useAuth()
-  const [showNotesModal, setShowNotesModal] = useState(false)
-  const [notesText, setNotesText] = useState('')
+  const [newNote, setNewNote] = useState('')
 
   const { data: client, isLoading } = useQuery(
     ['client', id],
@@ -28,6 +27,12 @@ export default function ClientDetailPage() {
   const { data: checkIns } = useQuery(
     ['clientCheckIns', id],
     () => apiService.getClientCheckIns(id!, { limit: 10 }),
+    { enabled: !!id }
+  )
+
+  const { data: notes } = useQuery(
+    ['clientNotes', id],
+    () => apiService.getClientNotes(id!),
     { enabled: !!id }
   )
 
@@ -101,29 +106,25 @@ export default function ClientDetailPage() {
   const membershipInfo = getMembershipStatusInfo()
   const daysSinceLastCheckIn = getDaysSinceLastCheckIn()
 
-  const updateNotesMutation = useMutation(
-    (notes: string) => apiService.updateClient(id!, { notes }),
+  const createNoteMutation = useMutation(
+    (note: string) => apiService.createClientNote(id!, note),
     {
       onSuccess: () => {
-        queryClient.invalidateQueries(['client', id])
-        setShowNotesModal(false)
-        setNotesText('')
-        toast.success('Notes updated successfully!')
+        queryClient.invalidateQueries(['clientNotes', id])
+        setNewNote('')
+        toast.success('Note added successfully!')
       },
       onError: () => {
-        toast.error('Failed to update notes')
+        toast.error('Failed to add note')
       }
     }
   )
 
-  const handleNotesSubmit = (e: React.FormEvent) => {
+  const handleNoteSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    updateNotesMutation.mutate(notesText)
-  }
-
-  const openNotesModal = () => {
-    setNotesText(client?.notes || '')
-    setShowNotesModal(true)
+    if (newNote.trim()) {
+      createNoteMutation.mutate(newNote)
+    }
   }
 
   if (isLoading) {
@@ -416,67 +417,62 @@ export default function ClientDetailPage() {
                   )}
                 </div>
 
-                <button
-                  onClick={openNotesModal}
-                  className="btn-secondary w-full flex items-center justify-center"
-                >
-                  <Edit2 className="w-4 h-4 mr-2" />
-                  Edit Notes
-                </button>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Notes Modal */}
-      {showNotesModal && (
-        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-lg w-full mx-4">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-semibold">Edit Notes</h2>
+      {/* Staff Notes Section */}
+      <div className="mt-8 card">
+        <div className="card-header">
+          <h3 className="text-lg font-medium text-gray-900">Staff Notes</h3>
+        </div>
+        <div className="card-body">
+          {/* Add Note Form */}
+          <form onSubmit={handleNoteSubmit} className="mb-6">
+            <div className="flex gap-3">
+              <textarea
+                value={newNote}
+                onChange={(e) => setNewNote(e.target.value)}
+                className="input flex-1"
+                rows={2}
+                placeholder="Add a note about this client..."
+                disabled={createNoteMutation.isLoading}
+              />
               <button
-                onClick={() => setShowNotesModal(false)}
-                className="text-gray-400 hover:text-gray-600"
+                type="submit"
+                disabled={createNoteMutation.isLoading || !newNote.trim()}
+                className="btn-primary self-end px-6"
               >
-                <X className="w-5 h-5" />
+                {createNoteMutation.isLoading ? 'Adding...' : 'Add Note'}
               </button>
             </div>
+          </form>
 
-            <form onSubmit={handleNotesSubmit}>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Notes for {client?.first_name} {client?.last_name}
-                </label>
-                <textarea
-                  value={notesText}
-                  onChange={(e) => setNotesText(e.target.value)}
-                  className="input w-full"
-                  rows={6}
-                  placeholder="Add notes about this client..."
-                />
-              </div>
-
-              <div className="mt-6 flex justify-end space-x-3">
-                <button
-                  type="button"
-                  onClick={() => setShowNotesModal(false)}
-                  className="btn-secondary"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={updateNotesMutation.isLoading}
-                  className="btn-primary"
-                >
-                  {updateNotesMutation.isLoading ? 'Saving...' : 'Save Notes'}
-                </button>
-              </div>
-            </form>
-          </div>
+          {/* Notes List */}
+          {notes && notes.length > 0 ? (
+            <div className="space-y-4">
+              {notes.map((note: any) => (
+                <div key={note.id} className="border border-gray-200 rounded-lg p-4 bg-gray-50">
+                  <div className="flex justify-between items-start mb-2">
+                    <div className="flex items-center text-sm text-gray-600">
+                      <User className="w-4 h-4 mr-2" />
+                      <span className="font-medium">{note.user_email}</span>
+                    </div>
+                    <div className="text-xs text-gray-500">
+                      {new Date(note.created_at).toLocaleString()}
+                    </div>
+                  </div>
+                  <p className="text-sm text-gray-900 whitespace-pre-wrap">{note.note}</p>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-gray-500 text-center py-8">No notes yet. Add the first note above.</p>
+          )}
         </div>
-      )}
+      </div>
     </div>
   )
 }

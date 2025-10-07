@@ -67,6 +67,7 @@ class Client(Base):
     tags = relationship("Tag", secondary=client_tags, back_populates="clients", lazy="selectin")
     memberships = relationship("Membership", back_populates="client", lazy="selectin")
     check_ins = relationship("CheckIn", back_populates="client", lazy="selectin")
+    client_notes = relationship("ClientNote", back_populates="client", lazy="selectin", order_by="ClientNote.created_at.desc()")
 
 
 class ContactMethod(Base):
@@ -151,3 +152,19 @@ class CheckIn(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
     client = relationship("Client", back_populates="check_ins")
+
+
+class ClientNote(Base):
+    """Client notes model for timestamped notes by staff"""
+    __tablename__ = "client_notes"
+    __table_args__ = {'extend_existing': True}
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    client_id = Column(UUID(as_uuid=True), ForeignKey("clients.id"), nullable=False)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
+    note = Column(Text, nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
+
+    client = relationship("Client", back_populates="client_notes")
+    user = relationship("User")

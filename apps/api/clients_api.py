@@ -12,7 +12,7 @@ import logging
 import csv
 import io
 
-from models import Client, ContactMethod, Consent, Tag, Membership, CheckIn, CheckInMethod
+from models import Client, ContactMethod, Consent, Tag, Membership, CheckIn, CheckInMethod, ClientNote
 from core.database import AsyncSessionLocal
 from auth_workaround import get_current_user, User
 
@@ -869,3 +869,106 @@ async def list_client_checkins(
     except Exception as e:
         logger.error(f"Error listing client check-ins: {e}")
         raise HTTPException(status_code=500, detail="Failed to list check-ins")
+
+
+# Client Notes Schemas
+class ClientNoteCreate(BaseModel):
+    note: str = Field(..., min_length=1, max_length=5000)
+
+
+class ClientNoteResponse(BaseModel):
+    id: str
+    client_id: str
+    note: str
+    created_at: str
+    updated_at: str
+    user_email: str
+    user_id: str
+
+
+# Client Notes Endpoints
+@router.get("/{client_id}/notes", response_model=List[ClientNoteResponse])
+async def get_client_notes(
+    client_id: str,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Get all notes for a client"""
+    try:
+        # Verify client exists
+        result = await db.execute(select(Client).where(Client.id == client_id))
+        client = result.scalar_one_or_none()
+
+        if not client:
+            raise HTTPException(status_code=404, detail="Client not found")
+
+        # Get notes with user info
+        notes_result = await db.execute(
+            select(ClientNote, User)
+            .join(User, ClientNote.user_id == User.id)
+            .where(ClientNote.client_id == client_id)
+            .order_by(ClientNote.created_at.desc())
+        )
+        notes_with_users = notes_result.all()
+
+        return [
+            ClientNoteResponse(
+                id=str(note.id),
+                client_id=str(note.client_id),
+                note=note.note,
+                created_at=note.created_at.isoformat(),
+                updated_at=note.updated_at.isoformat(),
+                user_email=user.email,
+                user_id=str(user.id)
+            )
+            for note, user in notes_with_users
+        ]
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting client notes: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get client notes")
+
+
+@router.post("/{client_id}/notes", response_model=ClientNoteResponse, status_code=status.HTTP_201_CREATED)
+async def create_client_note(
+    client_id: str,
+    note_data: ClientNoteCreate,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Create a new note for a client"""
+    try:
+        # Verify client exists
+        result = await db.execute(select(Client).where(Client.id == client_id))
+        client = result.scalar_one_or_none()
+
+        if not client:
+            raise HTTPException(status_code=404, detail="Client not found")
+
+        # Create note
+        note = ClientNote(
+            client_id=client_id,
+            user_id=current_user.id,
+            note=note_data.note
+        )
+
+        db.add(note)
+        await db.commit()
+        await db.refresh(note)
+
+        return ClientNoteResponse(
+            id=str(note.id),
+            client_id=str(note.client_id),
+            note=note.note,
+            created_at=note.created_at.isoformat(),
+            updated_at=note.updated_at.isoformat(),
+            user_email=current_user.email,
+            user_id=str(current_user.id)
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error creating client note: {e}")
+        await db.rollback()
+        raise HTTPException(status_code=500, detail="Failed to create client note")
