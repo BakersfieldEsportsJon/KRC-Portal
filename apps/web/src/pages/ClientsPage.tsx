@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from 'react-query'
 import { Link } from 'react-router-dom'
 import apiService from '../services/api'
-import { Plus, Search, X, Upload, Edit, Filter } from 'lucide-react'
+import { Plus, Search, X, Upload, Edit, Filter, LogIn } from 'lucide-react'
 import { ClientForm } from '../types'
 import toast from 'react-hot-toast'
 import { useAuth } from '../hooks/useAuth'
@@ -128,6 +128,23 @@ export default function ClientsPage() {
     }
   )
 
+  const checkInMutation = useMutation(
+    (clientId: string) => apiService.createCheckIn({
+      client_id: clientId,
+      method: 'staff',
+      station: 'Front Desk'
+    }),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries('clients')
+        toast.success('Check-in successful!')
+      },
+      onError: () => {
+        toast.error('Failed to check in')
+      }
+    }
+  )
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     createMutation.mutate(formData)
@@ -240,10 +257,10 @@ export default function ClientsPage() {
                   Contact
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Membership
+                  Status
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Expires
+                  Expiration Date
                 </th>
                 <th className="relative px-6 py-3">
                   <span className="sr-only">Actions</span>
@@ -255,63 +272,108 @@ export default function ClientsPage() {
                 if (statusFilter === 'all') return true
                 if (statusFilter === 'none') return !client.membership_status
                 return client.membership_status === statusFilter
-              }).map((client) => (
-                <tr key={client.id}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    {client.first_name} {client.last_name}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    <div>{client.email || 'N/A'}</div>
-                    <div className="text-xs text-gray-400">{client.phone || ''}</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(client.membership_status)}`}>
-                      {getStatusText(client.membership_status)}
-                    </span>
-                    {client.membership_plan && (
-                      <div className="text-xs text-gray-500 mt-1">{client.membership_plan}</div>
-                    )}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {client.membership_end_date
-                      ? new Date(client.membership_end_date).toLocaleDateString()
-                      : 'N/A'}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-3">
-                    {isAdmin() && (
-                      <button
-                        onClick={() => {
-                          setEditingClient(client)
-                          setEditFormData({
-                            first_name: client.first_name,
-                            last_name: client.last_name,
-                            email: client.email || '',
-                            phone: client.phone || '',
-                            date_of_birth: client.date_of_birth || '',
-                            parent_guardian_name: client.parent_guardian_name || '',
-                            pos_number: client.pos_number || '',
-                            service_coordinator: client.service_coordinator || '',
-                            pos_start_date: client.pos_start_date || '',
-                            pos_end_date: client.pos_end_date || '',
-                            notes: client.notes || '',
-                            language: client.language || ''
-                          })
-                          setShowEditModal(true)
-                        }}
-                        className="text-primary-600 hover:text-primary-900"
-                      >
-                        <Edit className="w-4 h-4 inline" />
-                      </button>
-                    )}
-                    <Link
-                      to={`/clients/${client.id}`}
-                      className="text-primary-600 hover:text-primary-900"
-                    >
-                      View
-                    </Link>
-                  </td>
-                </tr>
-              ))}
+              }).map((client) => {
+                // Calculate days until expiry for color coding
+                const daysUntilExpiry = client.membership_end_date
+                  ? Math.ceil((new Date(client.membership_end_date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))
+                  : null;
+
+                return (
+                  <tr key={client.id}>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                      {client.first_name} {client.last_name}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <div>{client.email || 'N/A'}</div>
+                      <div className="text-xs text-gray-400">{client.phone || ''}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(client.membership_status)}`}>
+                        {getStatusText(client.membership_status)}
+                      </span>
+                      {client.membership_plan && (
+                        <div className="text-xs text-gray-500 mt-1">{client.membership_plan}</div>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                      {client.membership_end_date ? (
+                        <div>
+                          <div className={`font-medium ${
+                            daysUntilExpiry !== null && daysUntilExpiry < 0 ? 'text-red-600' :
+                            daysUntilExpiry !== null && daysUntilExpiry <= 30 ? 'text-yellow-600' :
+                            'text-gray-900'
+                          }`}>
+                            {new Date(client.membership_end_date).toLocaleDateString()}
+                          </div>
+                          {daysUntilExpiry !== null && (
+                            <div className={`text-xs ${
+                              daysUntilExpiry < 0 ? 'text-red-600' :
+                              daysUntilExpiry <= 30 ? 'text-yellow-600' :
+                              'text-gray-500'
+                            }`}>
+                              {daysUntilExpiry < 0 ? `Expired ${Math.abs(daysUntilExpiry)} days ago` :
+                               daysUntilExpiry === 0 ? 'Expires today' :
+                               daysUntilExpiry === 1 ? 'Expires tomorrow' :
+                               `${daysUntilExpiry} days left`}
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <span className="text-gray-400">N/A</span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      <div className="flex items-center justify-end space-x-2">
+                        <button
+                          onClick={() => checkInMutation.mutate(client.id)}
+                          disabled={checkInMutation.isLoading}
+                          className={`inline-flex items-center px-3 py-1.5 rounded-md font-medium text-white transition-colors ${
+                            client.membership_status === 'expired'
+                              ? 'bg-red-600 hover:bg-red-700'
+                              : client.membership_status === 'expiring'
+                              ? 'bg-yellow-500 hover:bg-yellow-600'
+                              : 'bg-green-600 hover:bg-green-700'
+                          } disabled:opacity-50`}
+                          title="Check in client"
+                        >
+                          <LogIn className="w-3.5 h-3.5" />
+                        </button>
+                        {isAdmin() && (
+                          <button
+                            onClick={() => {
+                              setEditingClient(client)
+                              setEditFormData({
+                                first_name: client.first_name,
+                                last_name: client.last_name,
+                                email: client.email || '',
+                                phone: client.phone || '',
+                                date_of_birth: client.date_of_birth || '',
+                                parent_guardian_name: client.parent_guardian_name || '',
+                                pos_number: client.pos_number || '',
+                                service_coordinator: client.service_coordinator || '',
+                                pos_start_date: client.pos_start_date || '',
+                                pos_end_date: client.pos_end_date || '',
+                                notes: client.notes || '',
+                                language: client.language || ''
+                              })
+                              setShowEditModal(true)
+                            }}
+                            className="text-primary-600 hover:text-primary-900"
+                          >
+                            <Edit className="w-4 h-4 inline" />
+                          </button>
+                        )}
+                        <Link
+                          to={`/clients/${client.id}`}
+                          className="text-primary-600 hover:text-primary-900"
+                        >
+                          View
+                        </Link>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
