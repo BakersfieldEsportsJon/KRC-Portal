@@ -68,7 +68,7 @@ export default function ClientDetailPage() {
         message: 'Membership has expired',
         daysUntilExpiry
       }
-    } else if (daysUntilExpiry <= 14) {
+    } else if (daysUntilExpiry <= 30) {
       return {
         status: 'expiring',
         label: 'Expiring Soon',
