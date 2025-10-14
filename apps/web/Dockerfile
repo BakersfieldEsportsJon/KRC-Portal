@@ -17,6 +17,9 @@ RUN npx vite build
 # Use nginx to serve the built app
 FROM nginx:alpine
 
+# Install wget for health checks
+RUN apk add --no-cache wget
+
 # Copy built app to nginx
 COPY --from=0 /app/dist /usr/share/nginx/html
 

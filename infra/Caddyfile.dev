@@ -13,7 +13,7 @@
 
     # All other routes go to the React app
     handle {
-        reverse_proxy web:5173
+        reverse_proxy web:80
     }
 
     # Logs
