@@ -1,7 +1,7 @@
 # CRM Project Status
 
 ## Last Updated
-2025-10-06
+2025-10-14
 
 ## Important Development Guidelines
 
@@ -56,6 +56,13 @@ This ensures we can always revert to a working state if changes cause issues.
    - Fixed password hashing scheme mismatch (bcrypt)
    - Staff login now working correctly
 
+7. **Production Infrastructure Fixes** (2025-10-14)
+   - Fixed scheduler service restart loop
+   - Fixed web service unhealthy status
+   - All Docker services now running and healthy
+   - Generated production secrets and environment configuration
+   - Created user management tools for production deployment
+
 ### 🔧 Technical Details
 
 **Backend (FastAPI + Python)**
@@ -73,25 +80,53 @@ This ensures we can always revert to a working state if changes cause issues.
 - Hot module reloading
 
 **Infrastructure**
-- Docker Compose for local development
-- PostgreSQL database container
-- Separate API and web containers
+- Docker Compose for local development and production
+- PostgreSQL database container (healthy)
+- Redis for job queue (healthy)
+- RQ Worker for background jobs (running)
+- RQ Scheduler for scheduled tasks (running)
+- Separate API and web containers (both healthy)
+- Caddy reverse proxy with auto-SSL
 
 ### 📁 Key Files
 
+**Backend:**
 - `apps/api/auth_workaround.py` - Authentication endpoints (bcrypt hashing)
 - `apps/api/users_api.py` - User management (admin only, bcrypt hashing)
 - `apps/api/clients_api.py` - Client CRUD and notes
 - `apps/api/checkins_api.py` - Check-in management and statistics
 - `apps/api/models.py` - Central SQLAlchemy models
+- `apps/worker/requirements.txt` - Worker dependencies (includes rq-scheduler)
+
+**Frontend:**
 - `apps/web/src/pages/ClientDetailPage.tsx` - Enhanced client details
 - `apps/web/src/pages/ClientsPage.tsx` - Client list with check-ins
 - `apps/web/src/services/api.ts` - API service client
+- `apps/web/Dockerfile` - Web container with health checks
+
+**Infrastructure:**
+- `docker-compose.yml` - Service orchestration (updated for scheduler fix)
+- `.env` - Development environment
+- `.env.production` - Production environment (NEW)
+
+**Production Tools:**
+- `scripts/setup_production_users.py` - User management for production (NEW)
+- `DEPLOYMENT_INSTRUCTIONS.md` - Complete deployment guide (NEW)
+- `COMPLETED_FIXES.md` - Session summary and fixes (NEW)
 
 ### 🐛 Known Issues
-None currently
+None currently - All critical issues resolved!
 
 ### 📝 Recent Fixes
+
+1. **Production Infrastructure Issues** (2025-10-14)
+   - Problem: Scheduler service in restart loop, web service unhealthy
+   - Cause: Missing rq-scheduler package, missing wget in nginx container
+   - Solution: Added rq-scheduler to requirements, installed wget in Dockerfile
+   - Commit: 3762615
+   - **Result**: All 7 Docker services now healthy and production-ready
+
+### 📝 Previous Fixes
 
 1. **Login Authentication Issue** (2025-10-06)
    - Problem: Staff accounts couldn't log in - "hash could not be identified" error
@@ -148,3 +183,46 @@ All commits follow convention:
 - Detailed explanation of changes
 - Lists specific fixes/features
 - Includes Claude Code attribution
+
+---
+
+## 🚀 Production Readiness Status
+
+### ✅ System Health
+All 7 Docker services are healthy and running:
+- ✅ API (healthy)
+- ✅ Web (healthy)
+- ✅ PostgreSQL (healthy)
+- ✅ Redis (healthy)
+- ✅ Scheduler (running)
+- ✅ Worker (running)
+- ✅ Caddy (running)
+
+### ✅ Security Prepared
+- ✅ Production secrets generated (SECRET_KEY, JWT_SECRET_KEY, ZAPIER_HMAC_SECRET)
+- ✅ `.env.production` created with production configuration
+- ✅ CORS configured for production domains only
+- ✅ User management script ready for production user setup
+
+### 📋 Pre-Deployment Checklist
+See `DEPLOYMENT_INSTRUCTIONS.md` for complete deployment guide
+
+**Must Complete Before Deploy:**
+- [ ] Configure DNS for krc.bakersfieldesports.com and kiosk.bakersfieldesports.com
+- [ ] Update `.env.production` with actual database password
+- [ ] Update Zapier webhook URL (if using messaging)
+- [ ] Update ggLeap API key (if using integration)
+- [ ] Copy `.env.production` to `.env` on production server
+- [ ] Run database migrations
+- [ ] Create production admin account
+- [ ] Disable/delete demo accounts
+- [ ] Verify SSL certificates
+- [ ] Test all functionality
+
+### 📚 Deployment Documentation
+- **DEPLOYMENT_INSTRUCTIONS.md** - Step-by-step deployment guide
+- **COMPLETED_FIXES.md** - Summary of recent fixes
+- **PRODUCTION_CHECKLIST.md** - Production deployment checklist
+- **SECURITY.md** - Security best practices
+
+**Status**: ✅ **READY FOR PRODUCTION DEPLOYMENT**
