@@ -35,8 +35,19 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
         <div>
+          <div className="flex justify-center mb-4">
+            <img
+              src="/logo-large.svg"
+              alt="BEC Logo"
+              className="h-24 w-auto"
+              onError={(e) => {
+                // Fallback to regular logo if large logo doesn't exist
+                e.currentTarget.src = '/logo.svg'
+              }}
+            />
+          </div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            BEC CRM System
+            KRC Check-In
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
             Sign in to your account
@@ -45,26 +56,26 @@ export default function LoginPage() {
         <form className="mt-8 space-y-6" onSubmit={handleSubmit(onSubmit)}>
           <div className="rounded-md shadow-sm -space-y-px">
             <div>
-              <label htmlFor="email" className="sr-only">
-                Email address
+              <label htmlFor="username" className="sr-only">
+                Username
               </label>
               <input
-                {...register('email', {
-                  required: 'Email is required',
-                  pattern: {
-                    value: /^\S+@\S+$/i,
-                    message: 'Invalid email address',
+                {...register('username', {
+                  required: 'Username is required',
+                  minLength: {
+                    value: 3,
+                    message: 'Username must be at least 3 characters',
                   },
                 })}
-                type="email"
-                autoComplete="email"
+                type="text"
+                autoComplete="username"
                 className={`input rounded-t-md ${
-                  errors.email ? 'input-error' : ''
+                  errors.username ? 'input-error' : ''
                 }`}
-                placeholder="Email address"
+                placeholder="Username"
               />
-              {errors.email && (
-                <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
+              {errors.username && (
+                <p className="mt-1 text-sm text-red-600">{errors.username.message}</p>
               )}
             </div>
             <div>

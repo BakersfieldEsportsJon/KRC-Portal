@@ -379,13 +379,6 @@ export default function ClientDetailPage() {
           <div className="card">
             <div className="card-body">
               <div className="space-y-3">
-                {isAdmin() && (
-                  <>
-                    <button className="btn-primary w-full">Edit Client</button>
-                    <button className="btn-secondary w-full">Add Membership</button>
-                  </>
-                )}
-
                 {/* Enhanced Check-in Button with Status */}
                 <div className="space-y-2">
                   <button
@@ -458,7 +451,7 @@ export default function ClientDetailPage() {
                   <div className="flex justify-between items-start mb-2">
                     <div className="flex items-center text-sm text-gray-600">
                       <User className="w-4 h-4 mr-2" />
-                      <span className="font-medium">{note.user_email}</span>
+                      <span className="font-medium">{note.user_username || note.user_email}</span>
                     </div>
                     <div className="text-xs text-gray-500">
                       {new Date(note.created_at).toLocaleString()}

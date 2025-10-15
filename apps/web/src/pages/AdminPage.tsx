@@ -10,7 +10,7 @@ export default function AdminPage() {
   const [showEditModal, setShowEditModal] = useState(false)
   const [editingUser, setEditingUser] = useState<UserType | null>(null)
   const [formData, setFormData] = useState({
-    email: '',
+    username: '',
     password: '',
     role: 'staff',
     is_active: true
@@ -26,7 +26,7 @@ export default function AdminPage() {
       onSuccess: () => {
         queryClient.invalidateQueries('users')
         setShowAddModal(false)
-        setFormData({ email: '', password: '', role: 'staff', is_active: true })
+        setFormData({ username: '', password: '', role: 'staff', is_active: true })
         toast.success('User created successfully')
       },
       onError: (error: any) => {
@@ -43,7 +43,7 @@ export default function AdminPage() {
         queryClient.invalidateQueries('users')
         setShowEditModal(false)
         setEditingUser(null)
-        setFormData({ email: '', password: '', role: 'staff', is_active: true })
+        setFormData({ username: '', password: '', role: 'staff', is_active: true })
         toast.success('User updated successfully')
       },
       onError: (error: any) => {
@@ -74,7 +74,7 @@ export default function AdminPage() {
     e.preventDefault()
     if (editingUser) {
       const updateData: any = {
-        email: formData.email,
+        username: formData.username,
         role: formData.role,
         is_active: formData.is_active
       }
@@ -86,7 +86,7 @@ export default function AdminPage() {
   }
 
   const handleDelete = (user: UserType) => {
-    if (window.confirm(`Are you sure you want to delete ${user.email}?`)) {
+    if (window.confirm(`Are you sure you want to delete ${user.username}?`)) {
       deleteMutation.mutate(user.id)
     }
   }
@@ -126,7 +126,7 @@ export default function AdminPage() {
               <thead>
                 <tr>
                   <th className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900">
-                    Email
+                    Username
                   </th>
                   <th className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
                     Role
@@ -146,7 +146,7 @@ export default function AdminPage() {
                 {users?.map((user) => (
                   <tr key={user.id}>
                     <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900">
-                      {user.email}
+                      {user.username}
                     </td>
                     <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
                       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
@@ -179,7 +179,7 @@ export default function AdminPage() {
                         onClick={() => {
                           setEditingUser(user)
                           setFormData({
-                            email: user.email,
+                            username: user.username,
                             password: '',
                             role: user.role,
                             is_active: user.is_active
@@ -223,14 +223,16 @@ export default function AdminPage() {
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
-                    Email *
+                    Username *
                   </label>
                   <input
-                    type="email"
+                    type="text"
                     required
-                    value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    minLength={3}
+                    value={formData.username}
+                    onChange={(e) => setFormData({ ...formData, username: e.target.value })}
                     className="input mt-1"
+                    placeholder="Enter username"
                   />
                 </div>
 
@@ -317,14 +319,16 @@ export default function AdminPage() {
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
-                    Email *
+                    Username *
                   </label>
                   <input
-                    type="email"
+                    type="text"
                     required
-                    value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    minLength={3}
+                    value={formData.username}
+                    onChange={(e) => setFormData({ ...formData, username: e.target.value })}
                     className="input mt-1"
+                    placeholder="Enter username"
                   />
                 </div>
 

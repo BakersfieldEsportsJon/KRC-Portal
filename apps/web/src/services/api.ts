@@ -66,6 +66,11 @@ class ApiService {
     return response.data
   }
 
+  async updateDarkMode(darkMode: boolean): Promise<User> {
+    const response = await this.api.patch<User>('/auth/me/dark-mode', { dark_mode: darkMode })
+    return response.data
+  }
+
   async logout(): Promise<void> {
     localStorage.removeItem('access_token')
     localStorage.removeItem('refresh_token')

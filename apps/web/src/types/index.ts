@@ -1,9 +1,11 @@
 // API Types
 export interface User {
   id: string
+  username: string
   email: string
   role: string
   is_active: boolean
+  dark_mode: boolean
   created_at: string
   updated_at: string
 }
@@ -88,7 +90,7 @@ export interface CheckIn {
 
 // Form Types
 export interface LoginForm {
-  email: string
+  username: string
   password: string
 }
 

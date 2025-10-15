@@ -10,6 +10,7 @@ interface AuthContextType {
   logout: () => void
   isAdmin: () => boolean
   isStaff: () => boolean
+  toggleDarkMode: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -24,7 +25,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (token) {
       apiService
         .getCurrentUser()
-        .then(setUser)
+        .then((userData) => {
+          setUser(userData)
+          // Apply dark mode based on user preference
+          if (userData.dark_mode) {
+            document.documentElement.classList.add('dark')
+          } else {
+            document.documentElement.classList.remove('dark')
+          }
+        })
         .catch(() => {
           // Token is invalid, remove it
           localStorage.removeItem('access_token')
@@ -70,6 +79,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return user?.role === 'staff'
   }
 
+  const toggleDarkMode = async () => {
+    if (!user) return
+
+    const newDarkMode = !user.dark_mode
+
+    try {
+      const updatedUser = await apiService.updateDarkMode(newDarkMode)
+      setUser(updatedUser)
+
+      // Apply dark mode to document
+      if (newDarkMode) {
+        document.documentElement.classList.add('dark')
+      } else {
+        document.documentElement.classList.remove('dark')
+      }
+
+      toast.success(`Dark mode ${newDarkMode ? 'enabled' : 'disabled'}`)
+    } catch (error) {
+      console.error('Failed to toggle dark mode:', error)
+      toast.error('Failed to toggle dark mode')
+    }
+  }
+
   const value = {
     user,
     loading,
@@ -77,6 +109,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     logout,
     isAdmin,
     isStaff,
+    toggleDarkMode,
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

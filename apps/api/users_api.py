@@ -13,7 +13,7 @@ from core.database import AsyncSessionLocal
 from auth_workaround import get_current_user, User
 
 router = APIRouter(prefix="/users", tags=["users"])
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+pwd_context = CryptContext(schemes=["bcrypt", "argon2"], deprecated="auto")
 
 
 # Database dependency
@@ -24,14 +24,14 @@ async def get_db():
 
 # Schemas
 class UserCreate(BaseModel):
-    email: EmailStr
+    username: str = Field(..., min_length=3, max_length=100)
     password: str = Field(..., min_length=8)
     role: str = Field(..., pattern="^(admin|staff)$")
     is_active: bool = True
 
 
 class UserUpdate(BaseModel):
-    email: Optional[EmailStr] = None
+    username: Optional[str] = Field(None, min_length=3, max_length=100)
     password: Optional[str] = Field(None, min_length=8)
     role: Optional[str] = Field(None, pattern="^(admin|staff)$")
     is_active: Optional[bool] = None
@@ -39,9 +39,11 @@ class UserUpdate(BaseModel):
 
 class UserResponse(BaseModel):
     id: str
+    username: str
     email: str
     role: str
     is_active: bool
+    dark_mode: bool
     created_at: datetime
     updated_at: datetime
 
@@ -55,9 +57,11 @@ class UserResponse(BaseModel):
     def from_orm(cls, obj):
         return cls(
             id=str(obj.id),
+            username=obj.username,
             email=obj.email,
             role=obj.role,
             is_active=obj.is_active,
+            dark_mode=obj.dark_mode,
             created_at=obj.created_at,
             updated_at=obj.updated_at
         )
@@ -93,14 +97,14 @@ async def create_user(
     current_user: User = Depends(require_admin)
 ):
     """Create a new user (admin only)"""
-    # Check if email already exists
+    # Check if username already exists
     result = await db.execute(
-        select(User).where(User.email == user_data.email)
+        select(User).where(User.username == user_data.username)
     )
     if result.scalar_one_or_none():
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Email already registered"
+            detail="Username already registered"
         )
 
     # Hash password
@@ -110,7 +114,8 @@ async def create_user(
     from datetime import datetime
     now = datetime.utcnow()
     new_user = User(
-        email=user_data.email,
+        username=user_data.username,
+        email=f"{user_data.username}@example.com",  # Placeholder email
         password_hash=password_hash,
         role=user_data.role,
         is_active=user_data.is_active,
@@ -152,17 +157,18 @@ async def update_user(
         )
 
     # Update fields
-    if user_data.email:
-        # Check if new email is already taken
+    if user_data.username:
+        # Check if new username is already taken
         result = await db.execute(
-            select(User).where(User.email == user_data.email, User.id != user_id)
+            select(User).where(User.username == user_data.username, User.id != user_id)
         )
         if result.scalar_one_or_none():
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Email already registered"
+                detail="Username already registered"
             )
-        user.email = user_data.email
+        user.username = user_data.username
+        user.email = f"{user_data.username}@example.com"  # Update placeholder email
 
     if user_data.password:
         user.password_hash = pwd_context.hash(user_data.password)

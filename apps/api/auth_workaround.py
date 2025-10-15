@@ -17,8 +17,8 @@ from core.config import settings
 
 logger = logging.getLogger(__name__)
 
-# Password hashing
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+# Password hashing - support both bcrypt and argon2
+pwd_context = CryptContext(schemes=["bcrypt", "argon2"], deprecated="auto")
 
 # Security
 security = HTTPBearer()
@@ -29,7 +29,7 @@ router = APIRouter(prefix="/auth", tags=["Authentication"])
 
 # Schemas
 class LoginRequest(BaseModel):
-    email: EmailStr
+    username: str
     password: str
 
 
@@ -41,9 +41,11 @@ class TokenResponse(BaseModel):
 
 class UserResponse(BaseModel):
     id: str
+    username: str
     email: str
     role: str
     is_active: bool
+    dark_mode: bool
 
 
 # Database dependency
@@ -64,11 +66,13 @@ class UserWorkaround(Base):
     __table_args__ = {'extend_existing': True}
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    username = Column(String(100), unique=True, nullable=True, index=True)
     email = Column(String(255), unique=True, nullable=False, index=True)
     password_hash = Column(String(255), nullable=False)
     role = Column(String(50), nullable=False, default="staff")
     mfa_secret = Column(String(255), nullable=True)
     is_active = Column(Boolean, default=True, nullable=False)
+    dark_mode = Column(Boolean, default=False, nullable=False)
     created_at = Column(DateTime, nullable=False)
     updated_at = Column(DateTime, nullable=False)
 
@@ -128,29 +132,29 @@ async def login(
     db: AsyncSession = Depends(get_db)
 ):
     """Login endpoint"""
-    logger.info(f"Login attempt for email: {login_data.email}")
+    logger.info(f"Login attempt for username: {login_data.username}")
 
-    # Find user by email
-    result = await db.execute(select(User).where(User.email == login_data.email))
+    # Find user by username
+    result = await db.execute(select(User).where(User.username == login_data.username))
     user = result.scalar_one_or_none()
 
     if not user:
-        logger.warning(f"Login failed: User not found - {login_data.email}")
+        logger.warning(f"Login failed: User not found - {login_data.username}")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect email or password"
+            detail="Incorrect username or password"
         )
 
     # Verify password
     if not verify_password(login_data.password, user.password_hash):
-        logger.warning(f"Login failed: Invalid password - {login_data.email}")
+        logger.warning(f"Login failed: Invalid password - {login_data.username}")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect email or password"
+            detail="Incorrect username or password"
         )
 
     if not user.is_active:
-        logger.warning(f"Login failed: Inactive user - {login_data.email}")
+        logger.warning(f"Login failed: Inactive user - {login_data.username}")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Inactive user"
@@ -159,11 +163,11 @@ async def login(
     # Create access token
     access_token_expires = timedelta(minutes=settings.JWT_ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
-        data={"sub": str(user.id), "email": user.email, "role": user.role},
+        data={"sub": str(user.id), "username": user.username, "email": user.email, "role": user.role},
         expires_delta=access_token_expires
     )
 
-    logger.info(f"Login successful for user: {login_data.email}")
+    logger.info(f"Login successful for user: {login_data.username}")
 
     return TokenResponse(
         access_token=access_token,
@@ -178,7 +182,34 @@ async def get_current_user_info(
     """Get current user information"""
     return UserResponse(
         id=str(current_user.id),
+        username=current_user.username,
         email=current_user.email,
         role=current_user.role,
-        is_active=current_user.is_active
+        is_active=current_user.is_active,
+        dark_mode=current_user.dark_mode
+    )
+
+
+class DarkModeUpdate(BaseModel):
+    dark_mode: bool
+
+
+@router.patch("/me/dark-mode", response_model=UserResponse)
+async def update_dark_mode(
+    dark_mode_data: DarkModeUpdate,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Update current user's dark mode preference"""
+    current_user.dark_mode = dark_mode_data.dark_mode
+    await db.commit()
+    await db.refresh(current_user)
+
+    return UserResponse(
+        id=str(current_user.id),
+        username=current_user.username,
+        email=current_user.email,
+        role=current_user.role,
+        is_active=current_user.is_active,
+        dark_mode=current_user.dark_mode
     )

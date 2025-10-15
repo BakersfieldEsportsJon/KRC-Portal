@@ -8,7 +8,6 @@ import LoginPage from './pages/LoginPage'
 import DashboardPage from './pages/DashboardPage'
 import ClientsPage from './pages/ClientsPage'
 import ClientDetailPage from './pages/ClientDetailPage'
-import MembershipsPage from './pages/MembershipsPage'
 import CheckInsPage from './pages/CheckInsPage'
 import AdminPage from './pages/AdminPage'
 import KioskPage from './pages/KioskPage'
@@ -65,7 +64,6 @@ function AppRoutes() {
         <Route path="dashboard" element={<DashboardPage />} />
         <Route path="clients" element={<ClientsPage />} />
         <Route path="clients/:id" element={<ClientDetailPage />} />
-        <Route path="memberships" element={<MembershipsPage />} />
         <Route path="checkins" element={<CheckInsPage />} />
         <Route path="admin" element={<AdminPage />} />
       </Route>

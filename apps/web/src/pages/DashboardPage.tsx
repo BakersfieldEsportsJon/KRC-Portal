@@ -61,8 +61,8 @@ export default function DashboardPage() {
     <div className="px-4 sm:px-6 lg:px-8">
       <div className="sm:flex sm:items-center">
         <div className="sm:flex-auto">
-          <h1 className="text-2xl font-semibold text-gray-900">Dashboard</h1>
-          <p className="mt-2 text-sm text-gray-700">
+          <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Dashboard</h1>
+          <p className="mt-2 text-sm text-gray-700 dark:text-gray-300">
             Overview of your gaming center operations
           </p>
         </div>
@@ -79,11 +79,11 @@ export default function DashboardPage() {
                 </div>
                 <div className="ml-5 w-0 flex-1">
                   <dl>
-                    <dt className="text-sm font-medium text-gray-500 truncate">
+                    <dt className="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">
                       {item.name}
                     </dt>
                     <dd className="flex items-baseline">
-                      <div className="text-2xl font-semibold text-gray-900">
+                      <div className="text-2xl font-semibold text-gray-900 dark:text-white">
                         {item.value}
                       </div>
                       <div
@@ -105,11 +105,11 @@ export default function DashboardPage() {
       </div>
 
       {/* Recent Activity */}
-      <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div className="mt-8">
         {/* Membership Plans */}
         <div className="card">
           <div className="card-header">
-            <h3 className="text-lg font-medium text-gray-900">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white">
               Membership Plans
             </h3>
           </div>
@@ -118,42 +118,15 @@ export default function DashboardPage() {
               <div className="space-y-3">
                 {Object.entries(membershipStats.plans).map(([plan, count]) => (
                   <div key={plan} className="flex justify-between items-center">
-                    <span className="text-sm font-medium text-gray-900">
+                    <span className="text-sm font-medium text-gray-900 dark:text-white">
                       {plan.replace('_', ' ').toUpperCase()}
                     </span>
-                    <span className="text-sm text-gray-500">{count} active</span>
+                    <span className="text-sm text-gray-500 dark:text-gray-400">{count} active</span>
                   </div>
                 ))}
               </div>
             ) : (
-              <p className="text-sm text-gray-500">No active memberships</p>
-            )}
-          </div>
-        </div>
-
-        {/* Popular Stations */}
-        <div className="card">
-          <div className="card-header">
-            <h3 className="text-lg font-medium text-gray-900">
-              Popular Stations
-            </h3>
-          </div>
-          <div className="card-body">
-            {checkInStats?.popular_stations && Object.keys(checkInStats.popular_stations).length > 0 ? (
-              <div className="space-y-3">
-                {Object.entries(checkInStats.popular_stations)
-                  .slice(0, 5)
-                  .map(([station, count]) => (
-                    <div key={station} className="flex justify-between items-center">
-                      <span className="text-sm font-medium text-gray-900">
-                        {station}
-                      </span>
-                      <span className="text-sm text-gray-500">{count} check-ins</span>
-                    </div>
-                  ))}
-              </div>
-            ) : (
-              <p className="text-sm text-gray-500">No check-in data available</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">No active memberships</p>
             )}
           </div>
         </div>
