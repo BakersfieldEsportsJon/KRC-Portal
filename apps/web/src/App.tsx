@@ -5,6 +5,7 @@ import Layout from './components/Layout'
 import KioskLayout from './components/KioskLayout'
 import LoadingScreen from './components/LoadingScreen'
 import LoginPage from './pages/LoginPage'
+import PasswordSetupPage from './pages/PasswordSetupPage'
 import DashboardPage from './pages/DashboardPage'
 import ClientsPage from './pages/ClientsPage'
 import ClientDetailPage from './pages/ClientDetailPage'
@@ -52,6 +53,7 @@ function AppRoutes() {
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/setup-password" element={<PasswordSetupPage />} />
       <Route
         path="/"
         element={
