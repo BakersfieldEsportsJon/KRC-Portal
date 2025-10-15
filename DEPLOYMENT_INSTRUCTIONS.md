@@ -98,10 +98,13 @@ docker compose exec api python /app/scripts/setup_production_users.py
 ```
 
 Follow the prompts to:
-1. Create a new admin account with a strong password
+1. Create a new admin account with a strong password (min 12 chars, uppercase, lowercase, digits, special chars)
 2. Disable or delete demo accounts
 
-**Important**: Save the admin credentials securely!
+**Important**:
+- Save the admin credentials securely!
+- New users can also be created via the Admin UI with temporary passwords
+- Users created by admin will be forced to change their password on first login
 
 ### Step 7: Verify Deployment
 
@@ -123,11 +126,15 @@ curl https://krc.bakersfieldesports.com/api/v1/healthz
 1. Go to `https://krc.bakersfieldesports.com`
 2. Login with your new admin credentials
 3. Verify you can access all admin features
+4. Test creating a new staff user with a temporary password
 
-#### Test Staff Account
-If you created a staff account:
-1. Login as staff
-2. Verify staff can:
+#### Test Staff Account (Password Change Flow)
+If you created a staff account with a temporary password:
+1. Login as staff with temporary password
+2. Verify you are automatically redirected to change password page
+3. Set a new strong password meeting all requirements
+4. Verify you can then access the system normally
+5. Verify staff can:
    - ✓ View clients
    - ✓ Edit notes only
    - ✗ Cannot create/delete clients (should get 403 error)
@@ -149,6 +156,8 @@ If you created a staff account:
 ### Authentication
 - [ ] Demo accounts disabled/deleted
 - [ ] Admin account created with strong password
+- [ ] Password change flow tested (forced password change on first login)
+- [ ] Strong password requirements enforced (12+ chars, complexity)
 - [ ] JWT tokens working correctly
 - [ ] Sessions expire after configured time
 

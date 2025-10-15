@@ -79,7 +79,9 @@ A production-ready Customer Relationship Management and Check-in System built fo
 
 4. **Login credentials**
    - **Admin**: `admin@bakersfieldesports.com` / `admin123`
-   - **Staff**: `staff1@bakersfieldesports.com` / `staff123`
+   - **Staff**: `staff@bakersfieldesports.com` / `staff123`
+
+   **Note**: New users created by admin will be prompted to change their temporary password on first login.
 
 ### Manual Setup
 
@@ -338,19 +340,22 @@ make test-coverage
 
 ### Key Test Scenarios
 
-- **Authentication**: Login, token refresh, role-based access
+- **Authentication**: Login, token refresh, role-based access, forced password change
 - **Client Management**: CRUD operations, search, tagging
 - **Membership Logic**: Status calculation, expiration detection
 - **Kiosk Flow**: Phone lookup, check-in process, error handling
 - **Messaging**: Webhook signing, retry logic, template formatting
+- **User Management**: Account creation with temporary passwords, password strength validation
 
 ## 🔒 Security
 
 ### Authentication & Authorization
 - **JWT tokens** with refresh capability
-- **Argon2ID password hashing**
+- **Bcrypt password hashing** with secure rounds
 - **Role-based access control** (admin/staff)
 - **Protected endpoints** with dependency injection
+- **Forced password change** on first login for new users
+- **Strong password requirements** (12+ chars, uppercase, lowercase, digits, special chars)
 
 ### Data Protection
 - **HTTPS everywhere** in production (Let's Encrypt)
