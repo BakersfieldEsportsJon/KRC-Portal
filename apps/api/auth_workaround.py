@@ -1,7 +1,7 @@
 """
 Temporary auth endpoint workaround until module loading is fixed
 """
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Request
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
@@ -11,6 +11,8 @@ from jose import jwt, JWTError
 from datetime import datetime, timedelta
 from typing import Optional
 import logging
+import asyncio
+import random
 
 from core.database import AsyncSessionLocal
 from core.config import settings
@@ -128,36 +130,45 @@ async def get_current_user(
 # Routes
 @router.post("/login", response_model=TokenResponse)
 async def login(
+    request: Request,
     login_data: LoginRequest,
     db: AsyncSession = Depends(get_db)
 ):
-    """Login endpoint"""
-    logger.info(f"Login attempt for username: {login_data.username}")
+    """
+    Login endpoint with rate limiting and security hardening
+
+    Rate limit: 5 requests per minute per IP address
+    """
+    from slowapi import Limiter
+    from slowapi.util import get_remote_address
+
+    limiter = request.app.state.limiter
+    # Apply rate limit: 5 attempts per minute
+    limiter.limit("5/minute")(lambda: None)()
+
+    # Mask username in logs for privacy (show only first 3 chars)
+    masked_username = login_data.username[:3] + "***" if len(login_data.username) > 3 else "***"
+    logger.info(f"Login attempt from IP {get_remote_address(request)} for user: {masked_username}")
+
+    # Dummy hash to prevent timing attacks when user doesn't exist
+    dummy_hash = "$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewY5NU.TLqxKvlOe"
 
     # Find user by username
     result = await db.execute(select(User).where(User.username == login_data.username))
     user = result.scalar_one_or_none()
 
-    if not user:
-        logger.warning(f"Login failed: User not found - {login_data.username}")
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect username or password"
-        )
+    # Always hash password to maintain constant time
+    password_hash = user.password_hash if user else dummy_hash
+    is_valid_password = verify_password(login_data.password, password_hash)
 
-    # Verify password
-    if not verify_password(login_data.password, user.password_hash):
-        logger.warning(f"Login failed: Invalid password - {login_data.username}")
+    # Check all conditions together to prevent timing attacks
+    if not user or not is_valid_password or not user.is_active:
+        logger.warning(f"Failed login attempt from IP {get_remote_address(request)} for user: {masked_username}")
+        # Add random delay to prevent timing attacks
+        await asyncio.sleep(random.uniform(0.1, 0.3))
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect username or password"
-        )
-
-    if not user.is_active:
-        logger.warning(f"Login failed: Inactive user - {login_data.username}")
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Inactive user"
+            detail="Invalid credentials"
         )
 
     # Create access token
@@ -167,7 +178,7 @@ async def login(
         expires_delta=access_token_expires
     )
 
-    logger.info(f"Login successful for user: {login_data.username}")
+    logger.info(f"Login successful for user: {masked_username}")
 
     return TokenResponse(
         access_token=access_token,

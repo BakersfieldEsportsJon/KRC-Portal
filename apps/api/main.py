@@ -1,6 +1,10 @@
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from starlette.middleware.base import BaseHTTPMiddleware
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
 import logging
 import sys
 import os
@@ -20,6 +24,41 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
+
+
+# Security Headers Middleware
+class SecurityHeadersMiddleware(BaseHTTPMiddleware):
+    """Add security headers to all responses"""
+    async def dispatch(self, request: Request, call_next):
+        response = await call_next(request)
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        response.headers["X-Frame-Options"] = "DENY"
+        response.headers["X-XSS-Protection"] = "1; mode=block"
+        response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+        # Add HSTS only in production
+        if settings.is_production:
+            response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+        return response
+
+
+# Request Size Limit Middleware
+class RequestSizeLimitMiddleware(BaseHTTPMiddleware):
+    """Limit request body size to prevent DOS attacks"""
+    MAX_REQUEST_SIZE = 10 * 1024 * 1024  # 10MB
+
+    async def dispatch(self, request: Request, call_next):
+        if 'content-length' in request.headers:
+            content_length = int(request.headers['content-length'])
+            if content_length > self.MAX_REQUEST_SIZE:
+                return JSONResponse(
+                    status_code=413,
+                    content={"error": "Request body too large"}
+                )
+        return await call_next(request)
+
+
+# Initialize rate limiter
+limiter = Limiter(key_func=get_remote_address, default_limits=["100/minute"])
 
 
 @asynccontextmanager
@@ -58,14 +97,28 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-# CORS middleware
+# Initialize rate limiter state
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+# Add security middleware (order matters - these run first)
+app.add_middleware(SecurityHeadersMiddleware)
+app.add_middleware(RequestSizeLimitMiddleware)
+
+# CORS middleware - Fixed configuration
+if not settings.CORS_ORIGINS or settings.CORS_ORIGINS == ["*"]:
+    logger.warning("⚠️  CORS_ORIGINS not properly configured - using restrictive defaults")
+    cors_origins = ["http://localhost:3000"]  # Safe default for development
+else:
+    cors_origins = settings.CORS_ORIGINS
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.CORS_ORIGINS if settings.CORS_ORIGINS else ["*"],
+    allow_origins=cors_origins,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-    expose_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE"],  # Explicit methods only
+    allow_headers=["Content-Type", "Authorization"],  # Explicit headers only
+    expose_headers=["Content-Type"],
 )
 
 # Setup exception handlers

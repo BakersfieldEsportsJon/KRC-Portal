@@ -84,16 +84,60 @@ def generate_mfa_secret() -> str:
 
 
 def is_strong_password(password: str) -> tuple[bool, str]:
-    """Check if password meets strength requirements"""
-    if len(password) < 8:
-        return False, "Password must be at least 8 characters long"
+    """
+    Check if password meets strength requirements
 
+    Requirements:
+    - Minimum 12 characters
+    - At least one uppercase letter
+    - At least one lowercase letter
+    - At least one digit
+    - At least one special character
+    - No common passwords
+    - No sequential characters
+    """
+    # Common weak passwords to block
+    COMMON_PASSWORDS = [
+        "password", "password123", "123456", "12345678", "qwerty", "abc123",
+        "monkey", "letmein", "trustno1", "dragon", "baseball", "iloveyou",
+        "master", "sunshine", "ashley", "bailey", "passw0rd", "shadow",
+        "123123", "654321", "superman", "qazwsx", "michael", "football"
+    ]
+
+    # Minimum 12 characters
+    if len(password) < 12:
+        return False, "Password must be at least 12 characters long"
+
+    # Check for common passwords
+    if password.lower() in COMMON_PASSWORDS:
+        return False, "This password is too common. Please choose a unique password"
+
+    # Character type requirements
     has_upper = any(c.isupper() for c in password)
     has_lower = any(c.islower() for c in password)
     has_digit = any(c.isdigit() for c in password)
     has_special = any(c in "!@#$%^&*()_+-=[]{}|;:,.<>?" for c in password)
 
-    if not (has_upper and has_lower and has_digit):
-        return False, "Password must contain uppercase, lowercase, and numeric characters"
+    if not has_upper:
+        return False, "Password must contain at least one uppercase letter"
+    if not has_lower:
+        return False, "Password must contain at least one lowercase letter"
+    if not has_digit:
+        return False, "Password must contain at least one number"
+    if not has_special:
+        return False, "Password must contain at least one special character (!@#$%^&*()_+-=[]{}|;:,.<>?)"
+
+    # Check for sequential characters (123, abc, etc.)
+    sequential_patterns = [
+        "012", "123", "234", "345", "456", "567", "678", "789", "890",
+        "abc", "bcd", "cde", "def", "efg", "fgh", "ghi", "hij", "ijk",
+        "jkl", "klm", "lmn", "mno", "nop", "opq", "pqr", "qrs", "rst",
+        "stu", "tuv", "uvw", "vwx", "wxy", "xyz"
+    ]
+
+    password_lower = password.lower()
+    for pattern in sequential_patterns:
+        if pattern in password_lower or pattern[::-1] in password_lower:
+            return False, "Password cannot contain sequential characters (like '123' or 'abc')"
 
     return True, "Password is strong"

@@ -2,9 +2,9 @@ services:
   postgres:
     image: postgres:16-alpine
     environment:
-      POSTGRES_DB: crm_db
-      POSTGRES_USER: crm_user
-      POSTGRES_PASSWORD: crm_password
+      POSTGRES_DB: ${POSTGRES_DB:-crm_db}
+      POSTGRES_USER: ${POSTGRES_USER:-crm_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./infra/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
@@ -32,8 +32,8 @@ services:
       context: .
       dockerfile: ./apps/api/Dockerfile
     environment:
-      - DATABASE_URL=postgresql://crm_user:crm_password@postgres:5432/crm_db
-      - REDIS_URL=redis://redis:6379/0
+      - DATABASE_URL=${DATABASE_URL}
+      - REDIS_URL=${REDIS_URL:-redis://redis:6379/0}
     env_file:
       - .env
     depends_on:
@@ -65,8 +65,8 @@ services:
       context: .
       dockerfile: ./apps/worker/Dockerfile
     environment:
-      - DATABASE_URL=postgresql://crm_user:crm_password@postgres:5432/crm_db
-      - REDIS_URL=redis://redis:6379/0
+      - DATABASE_URL=${DATABASE_URL}
+      - REDIS_URL=${REDIS_URL:-redis://redis:6379/0}
     env_file:
       - .env
     depends_on:
@@ -84,8 +84,8 @@ services:
       dockerfile: ./apps/worker/Dockerfile
     command: rqscheduler --host redis --port 6379 --db 0
     environment:
-      - DATABASE_URL=postgresql://crm_user:crm_password@postgres:5432/crm_db
-      - REDIS_URL=redis://redis:6379/0
+      - DATABASE_URL=${DATABASE_URL}
+      - REDIS_URL=${REDIS_URL:-redis://redis:6379/0}
     env_file:
       - .env
     depends_on:
