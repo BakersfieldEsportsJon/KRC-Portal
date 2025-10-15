@@ -1,15 +1,13 @@
 import { useParams } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from 'react-query'
 import apiService from '../services/api'
-import { Mail, Phone, Calendar, Tag, User, Briefcase, FileText, Languages, LogIn, X, Edit2, AlertTriangle, Clock } from 'lucide-react'
+import { Mail, Phone, Calendar, Tag, User, Briefcase, FileText, Languages, LogIn, AlertTriangle, Clock } from 'lucide-react'
 import toast from 'react-hot-toast'
-import { useAuth } from '../hooks/useAuth'
 import { useState } from 'react'
 
 export default function ClientDetailPage() {
   const { id } = useParams<{ id: string }>()
   const queryClient = useQueryClient()
-  const { isAdmin } = useAuth()
   const [newNote, setNewNote] = useState('')
 
   const { data: client, isLoading } = useQuery(
@@ -43,9 +41,31 @@ export default function ClientDetailPage() {
       station: 'Front Desk'
     }),
     {
-      onSuccess: () => {
+      onSuccess: (data: any) => {
         queryClient.invalidateQueries(['clientCheckIns', id])
-        toast.success('Check-in successful!')
+
+        // Show membership warning if present
+        if (data.membership_warning) {
+          const warning = data.membership_warning.toLowerCase()
+          if (warning.includes('expired')) {
+            toast.error(
+              `✓ Checked in - MEMBERSHIP EXPIRED\n${data.membership_warning}\nClient may play today. Please remind them to contact their service coordinator to renew.`,
+              { duration: 8000 }
+            )
+          } else if (warning.includes('expiring')) {
+            toast(
+              `✓ Checked in - Membership Expiring Soon\n${data.membership_warning}\nPlease remind client to contact their service coordinator for renewal.`,
+              {
+                duration: 6000,
+                icon: '⚠️'
+              }
+            )
+          } else {
+            toast.success('Check-in successful!')
+          }
+        } else {
+          toast.success('Check-in successful!')
+        }
       },
       onError: () => {
         toast.error('Failed to check in')

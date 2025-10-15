@@ -1,6 +1,6 @@
 import { useQuery } from 'react-query'
 import apiService from '../services/api'
-import { Users, Calendar, LogIn, TrendingUp, User, FileText } from 'lucide-react'
+import { Users, Calendar, LogIn, TrendingUp, User } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
 export default function DashboardPage() {
@@ -14,10 +14,7 @@ export default function DashboardPage() {
     () => apiService.getCheckInStats()
   )
 
-  const { data: expiringMemberships, isLoading: expiringLoading } = useQuery(
-    'expiringMemberships',
-    () => apiService.getExpiringMemberships(30)
-  )
+  // Removed expiringMemberships query - not used on dashboard
 
   const { data: recentNotes, isLoading: notesLoading } = useQuery(
     'recentNotes',
@@ -165,7 +162,7 @@ export default function DashboardPage() {
                 </h3>
                 <div className="mt-2 text-sm text-yellow-700">
                   <p>
-                    {membershipStats.expiring_30_days} memberships are expiring within the next 30 days.
+                    {membershipStats?.expiring_30_days} memberships are expiring within the next 30 days.
                     Consider reaching out to these members for renewal.
                   </p>
                 </div>

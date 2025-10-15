@@ -149,10 +149,8 @@ export interface ApiError {
 // Stats Types
 export interface MembershipStats {
   total_active: number
-  total_expired: number
-  total_pending: number
+  expired: number
   expiring_30_days: number
-  expiring_7_days: number
   plans: Record<string, number>
 }
 

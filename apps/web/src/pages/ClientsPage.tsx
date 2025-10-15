@@ -135,9 +135,31 @@ export default function ClientsPage() {
       station: 'Front Desk'
     }),
     {
-      onSuccess: () => {
+      onSuccess: (data: any) => {
         queryClient.invalidateQueries('clients')
-        toast.success('Check-in successful!')
+
+        // Show membership warning if present
+        if (data.membership_warning) {
+          const warning = data.membership_warning.toLowerCase()
+          if (warning.includes('expired')) {
+            toast.error(
+              `✓ Checked in - MEMBERSHIP EXPIRED\n${data.membership_warning}\nClient may play today. Please remind them to contact their service coordinator to renew.`,
+              { duration: 8000 }
+            )
+          } else if (warning.includes('expiring')) {
+            toast(
+              `✓ Checked in - Membership Expiring Soon\n${data.membership_warning}\nPlease remind client to contact their service coordinator for renewal.`,
+              {
+                duration: 6000,
+                icon: '⚠️'
+              }
+            )
+          } else {
+            toast.success('Check-in successful!')
+          }
+        } else {
+          toast.success('Check-in successful!')
+        }
       },
       onError: () => {
         toast.error('Failed to check in')
