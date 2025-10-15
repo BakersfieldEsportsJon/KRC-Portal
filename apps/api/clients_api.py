@@ -884,6 +884,9 @@ class ClientNoteResponse(BaseModel):
     updated_at: str
     user_email: str
     user_id: str
+    user_username: Optional[str] = None
+    client_first_name: Optional[str] = None
+    client_last_name: Optional[str] = None
 
 
 # Client Notes Endpoints
@@ -919,7 +922,8 @@ async def get_client_notes(
                 created_at=note.created_at.isoformat(),
                 updated_at=note.updated_at.isoformat(),
                 user_email=user.email,
-                user_id=str(user.id)
+                user_id=str(user.id),
+                user_username=user.username
             )
             for note, user in notes_with_users
         ]
@@ -964,7 +968,8 @@ async def create_client_note(
             created_at=note.created_at.isoformat(),
             updated_at=note.updated_at.isoformat(),
             user_email=current_user.email,
-            user_id=str(current_user.id)
+            user_id=str(current_user.id),
+            user_username=current_user.username
         )
     except HTTPException:
         raise
@@ -972,3 +977,45 @@ async def create_client_note(
         logger.error(f"Error creating client note: {e}")
         await db.rollback()
         raise HTTPException(status_code=500, detail="Failed to create client note")
+
+
+@router.get("/notes/recent", response_model=List[ClientNoteResponse])
+async def get_recent_notes(
+    days: int = 7,
+    limit: int = 20,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Get recent notes from the past N days across all clients"""
+    try:
+        cutoff_date = datetime.now() - timedelta(days=days)
+
+        # Get notes with user and client info
+        notes_result = await db.execute(
+            select(ClientNote, User, Client)
+            .join(User, ClientNote.user_id == User.id)
+            .join(Client, ClientNote.client_id == Client.id)
+            .where(ClientNote.created_at >= cutoff_date)
+            .order_by(ClientNote.created_at.desc())
+            .limit(limit)
+        )
+        notes_with_info = notes_result.all()
+
+        return [
+            ClientNoteResponse(
+                id=str(note.id),
+                client_id=str(note.client_id),
+                note=note.note,
+                created_at=note.created_at.isoformat(),
+                updated_at=note.updated_at.isoformat(),
+                user_email=user.email,
+                user_id=str(user.id),
+                user_username=user.username,
+                client_first_name=client.first_name,
+                client_last_name=client.last_name
+            )
+            for note, user, client in notes_with_info
+        ]
+    except Exception as e:
+        logger.error(f"Error getting recent notes: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get recent notes")

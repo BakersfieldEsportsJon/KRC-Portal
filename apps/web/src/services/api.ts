@@ -237,6 +237,13 @@ class ApiService {
     const response = await this.api.post(`/clients/${clientId}/notes`, { note })
     return response.data
   }
+
+  async getRecentNotes(days: number = 7, limit: number = 20): Promise<any[]> {
+    const response = await this.api.get('/clients/notes/recent', {
+      params: { days, limit }
+    })
+    return response.data
+  }
 }
 
 export const apiService = new ApiService()
