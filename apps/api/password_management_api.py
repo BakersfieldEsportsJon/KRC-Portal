@@ -39,6 +39,7 @@ class PasswordResetInitiateRequest(BaseModel):
 class MessageResponse(BaseModel):
     message: str
     detail: str | None = None
+    reset_link: str | None = None
 
 
 # Helper function to send email (placeholder - integrate with your email service)
@@ -215,16 +216,20 @@ async def initiate_password_reset(
     await db.commit()
     await db.refresh(reset_token)
 
-    # Send email (use admin hostname from env)
-    # TODO: Get base_url from settings
-    base_url = "https://krc.bakersfieldesports.com"  # or from settings
+    # For local hosting without email, return the link directly
+    # TODO: Get base_url from settings or request headers
+    base_url = "http://localhost:3000"  # Default for local development
+    reset_link = f"{base_url}/setup-password?token={reset_token.token}"
+
+    # Still log for debugging
     await send_password_reset_email(target_user.email, reset_token.token, base_url)
 
     logger.info(f"Password reset initiated by admin {current_user.username} for user {target_user.username or target_user.email}")
 
     return MessageResponse(
-        message=f"Password reset email sent to {target_user.email}",
-        detail="The user will receive an email with a password reset link valid for 24 hours"
+        message=f"Password reset link generated for {target_user.email}",
+        detail="Share this link with the user to reset their password. Link valid for 24 hours.",
+        reset_link=reset_link
     )
 
 
