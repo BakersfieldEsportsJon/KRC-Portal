@@ -191,3 +191,13 @@ except Exception as e:
     logger.error(f"❌ Failed to register users API: {e}")
     import traceback
     logger.error(traceback.format_exc())
+
+# Password Management API
+try:
+    from password_management_api import router as password_router
+    app.include_router(password_router, prefix="/api/v1")
+    logger.info("✅ Registered password management API")
+except Exception as e:
+    logger.error(f"❌ Failed to register password management API: {e}")
+    import traceback
+    logger.error(traceback.format_exc())

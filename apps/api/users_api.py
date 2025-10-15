@@ -25,9 +25,9 @@ async def get_db():
 # Schemas
 class UserCreate(BaseModel):
     username: str = Field(..., min_length=3, max_length=100)
-    password: str = Field(..., min_length=8)
+    email: EmailStr  # Real email required for password setup
     role: str = Field(..., pattern="^(admin|staff)$")
-    is_active: bool = True
+    # No password field - will be set via email link
 
 
 class UserUpdate(BaseModel):
@@ -44,6 +44,7 @@ class UserResponse(BaseModel):
     role: str
     is_active: bool
     dark_mode: bool
+    password_setup_required: bool
     created_at: datetime
     updated_at: datetime
 
@@ -62,9 +63,17 @@ class UserResponse(BaseModel):
             role=obj.role,
             is_active=obj.is_active,
             dark_mode=obj.dark_mode,
+            password_setup_required=getattr(obj, 'password_setup_required', False),
             created_at=obj.created_at,
             updated_at=obj.updated_at
         )
+
+
+class UserCreateResponse(UserResponse):
+    """Response when creating a user - includes setup info"""
+    setup_token: Optional[str] = None
+    setup_link: Optional[str] = None
+    message: str
 
 
 def require_admin(current_user: User = Depends(get_current_user)):
@@ -90,13 +99,21 @@ async def list_users(
     return [UserResponse.from_orm(user) for user in users]
 
 
-@router.post("", response_model=UserResponse)
+@router.post("", response_model=UserCreateResponse)
 async def create_user(
     user_data: UserCreate,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(require_admin)
 ):
-    """Create a new user (admin only)"""
+    """
+    Create a new user (admin only)
+
+    Creates user and sends password setup email.
+    Admin does NOT set the password - user receives email link to set their own.
+    """
+    import secrets
+    from models_password_reset import PasswordResetToken
+
     # Check if username already exists
     result = await db.execute(
         select(User).where(User.username == user_data.username)
@@ -107,18 +124,28 @@ async def create_user(
             detail="Username already registered"
         )
 
-    # Hash password
-    password_hash = pwd_context.hash(user_data.password)
+    # Check if email already exists
+    result = await db.execute(
+        select(User).where(User.email == user_data.email)
+    )
+    if result.scalar_one_or_none():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Email already registered"
+        )
 
-    # Create user
+    # Create user with temporary password (will be replaced via email link)
     from datetime import datetime
     now = datetime.utcnow()
+    temporary_password = secrets.token_urlsafe(32)  # User won't see this
+
     new_user = User(
         username=user_data.username,
-        email=f"{user_data.username}@example.com",  # Placeholder email
-        password_hash=password_hash,
+        email=user_data.email,
+        password_hash=pwd_context.hash(temporary_password),  # Temporary, must be changed
         role=user_data.role,
-        is_active=user_data.is_active,
+        is_active=False,  # Inactive until password is set
+        password_setup_required=True,
         created_at=now,
         updated_at=now
     )
@@ -127,7 +154,33 @@ async def create_user(
     await db.commit()
     await db.refresh(new_user)
 
-    return UserResponse.from_orm(new_user)
+    # Create password setup token
+    setup_token = PasswordResetToken.create_setup_token(new_user.id)
+    db.add(setup_token)
+    await db.commit()
+    await db.refresh(setup_token)
+
+    # Send setup email (placeholder - integrate with email service)
+    base_url = "https://krc.bakersfieldesports.com"  # TODO: Get from settings
+    setup_link = f"{base_url}/setup-password?token={setup_token.token}"
+
+    import logging
+    logger = logging.getLogger(__name__)
+    logger.info("=" * 80)
+    logger.info(f"NEW USER CREATED: {new_user.username} ({new_user.email})")
+    logger.info(f"PASSWORD SETUP LINK: {setup_link}")
+    logger.info(f"Link expires in 24 hours")
+    logger.info("=" * 80)
+
+    # TODO: Send actual email
+    # await send_password_setup_email(new_user.email, setup_token.token, base_url)
+
+    response = UserCreateResponse.from_orm(new_user)
+    response.setup_token = setup_token.token  # Return for dev/testing
+    response.setup_link = setup_link
+    response.message = f"User created. Password setup email sent to {new_user.email}"
+
+    return response
 
 
 @router.patch("/{user_id}", response_model=UserResponse)

@@ -75,6 +75,8 @@ class UserWorkaround(Base):
     mfa_secret = Column(String(255), nullable=True)
     is_active = Column(Boolean, default=True, nullable=False)
     dark_mode = Column(Boolean, default=False, nullable=False)
+    password_setup_required = Column(Boolean, default=False, nullable=False)
+    last_password_change = Column(DateTime, nullable=True)
     created_at = Column(DateTime, nullable=False)
     updated_at = Column(DateTime, nullable=False)
 
