@@ -195,8 +195,8 @@ export default function ClientsPage() {
     <div className="px-4 sm:px-6 lg:px-8">
       <div className="sm:flex sm:items-center">
         <div className="sm:flex-auto">
-          <h1 className="text-2xl font-semibold text-gray-900">Clients</h1>
-          <p className="mt-2 text-sm text-gray-700">
+          <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Clients</h1>
+          <p className="mt-2 text-sm text-gray-700 dark:text-gray-300">
             Manage your gaming center members and their information
           </p>
         </div>
@@ -250,16 +250,16 @@ export default function ClientsPage() {
           <table className="table">
             <thead className="table-header">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Name
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Contact
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Status
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Expiration Date
                 </th>
                 <th className="relative px-6 py-3">
@@ -280,19 +280,19 @@ export default function ClientsPage() {
 
                 return (
                   <tr key={client.id}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
                       {client.first_name} {client.last_name}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                       <div>{client.email || 'N/A'}</div>
-                      <div className="text-xs text-gray-400">{client.phone || ''}</div>
+                      <div className="text-xs text-gray-400 dark:text-gray-500">{client.phone || ''}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(client.membership_status)}`}>
                         {getStatusText(client.membership_status)}
                       </span>
                       {client.membership_plan && (
-                        <div className="text-xs text-gray-500 mt-1">{client.membership_plan}</div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">{client.membership_plan}</div>
                       )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
@@ -301,7 +301,7 @@ export default function ClientsPage() {
                           <div className={`font-medium ${
                             daysUntilExpiry !== null && daysUntilExpiry < 0 ? 'text-red-600' :
                             daysUntilExpiry !== null && daysUntilExpiry <= 30 ? 'text-yellow-600' :
-                            'text-gray-900'
+                            'text-gray-900 dark:text-white'
                           }`}>
                             {new Date(client.membership_end_date).toLocaleDateString()}
                           </div>
@@ -309,7 +309,7 @@ export default function ClientsPage() {
                             <div className={`text-xs ${
                               daysUntilExpiry < 0 ? 'text-red-600' :
                               daysUntilExpiry <= 30 ? 'text-yellow-600' :
-                              'text-gray-500'
+                              'text-gray-500 dark:text-gray-400'
                             }`}>
                               {daysUntilExpiry < 0 ? `Expired ${Math.abs(daysUntilExpiry)} days ago` :
                                daysUntilExpiry === 0 ? 'Expires today' :
@@ -319,7 +319,7 @@ export default function ClientsPage() {
                           )}
                         </div>
                       ) : (
-                        <span className="text-gray-400">N/A</span>
+                        <span className="text-gray-400 dark:text-gray-500">N/A</span>
                       )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
@@ -382,12 +382,12 @@ export default function ClientsPage() {
       {/* Add Client Modal */}
       {showAddModal && (
         <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg w-full max-w-2xl max-h-[90vh] flex flex-col">
-            <div className="flex justify-between items-center p-6 border-b border-gray-200">
-              <h2 className="text-xl font-semibold">Add New Client</h2>
+          <div className="bg-white dark:bg-gray-800 rounded-lg w-full max-w-2xl max-h-[90vh] flex flex-col">
+            <div className="flex justify-between items-center p-6 border-b border-gray-200 dark:border-gray-700">
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Add New Client</h2>
               <button
                 onClick={() => setShowAddModal(false)}
-                className="text-gray-400 hover:text-gray-600"
+                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -397,7 +397,7 @@ export default function ClientsPage() {
               <div className="overflow-y-auto p-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                     First Name *
                   </label>
                   <input
@@ -410,7 +410,7 @@ export default function ClientsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                     Last Name *
                   </label>
                   <input
@@ -423,7 +423,7 @@ export default function ClientsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                     Email
                   </label>
                   <input
@@ -435,7 +435,7 @@ export default function ClientsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                     Phone
                   </label>
                   <input
@@ -447,7 +447,7 @@ export default function ClientsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                     Date of Birth
                   </label>
                   <input
@@ -459,7 +459,7 @@ export default function ClientsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                     Parent/Guardian Name
                   </label>
                   <input
@@ -471,7 +471,7 @@ export default function ClientsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                     UCI Number
                   </label>
                   <input
@@ -483,7 +483,7 @@ export default function ClientsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                     Service Coordinator
                   </label>
                   <input
@@ -495,7 +495,7 @@ export default function ClientsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                     POS Start Date
                   </label>
                   <input
@@ -507,7 +507,7 @@ export default function ClientsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                     POS End Date
                   </label>
                   <input
@@ -519,7 +519,7 @@ export default function ClientsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                     Language
                   </label>
                   <input
@@ -531,7 +531,7 @@ export default function ClientsPage() {
                 </div>
 
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                     Notes
                   </label>
                   <textarea
@@ -544,7 +544,7 @@ export default function ClientsPage() {
                 </div>
               </div>
 
-              <div className="border-t border-gray-200 p-6 flex justify-end space-x-3 bg-gray-50">
+              <div className="border-t border-gray-200 dark:border-gray-700 p-6 flex justify-end space-x-3 bg-gray-50 dark:bg-gray-900">
                 <button
                   type="button"
                   onClick={() => setShowAddModal(false)}
@@ -568,15 +568,15 @@ export default function ClientsPage() {
       {/* Import Modal */}
       {showImportModal && (
         <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-semibold">Import Clients from CSV</h2>
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Import Clients from CSV</h2>
               <button
                 onClick={() => {
                   setShowImportModal(false)
                   setImportFile(null)
                 }}
-                className="text-gray-400 hover:text-gray-600"
+                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -584,7 +584,7 @@ export default function ClientsPage() {
 
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Select CSV File
                 </label>
                 <input
@@ -644,15 +644,15 @@ export default function ClientsPage() {
       {/* Edit Client Modal */}
       {showEditModal && editingClient && (
         <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg w-full max-w-2xl max-h-[90vh] flex flex-col">
-            <div className="flex justify-between items-center p-6 border-b border-gray-200">
-              <h2 className="text-xl font-semibold">Edit Client</h2>
+          <div className="bg-white dark:bg-gray-800 rounded-lg w-full max-w-2xl max-h-[90vh] flex flex-col">
+            <div className="flex justify-between items-center p-6 border-b border-gray-200 dark:border-gray-700">
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Edit Client</h2>
               <button
                 onClick={() => {
                   setShowEditModal(false)
                   setEditingClient(null)
                 }}
-                className="text-gray-400 hover:text-gray-600"
+                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -662,7 +662,7 @@ export default function ClientsPage() {
               <div className="overflow-y-auto p-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                     First Name *
                   </label>
                   <input
@@ -675,7 +675,7 @@ export default function ClientsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                     Last Name *
                   </label>
                   <input
@@ -688,7 +688,7 @@ export default function ClientsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                     Email
                   </label>
                   <input
@@ -700,7 +700,7 @@ export default function ClientsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                     Phone
                   </label>
                   <input
@@ -712,7 +712,7 @@ export default function ClientsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                     Date of Birth
                   </label>
                   <input
@@ -724,7 +724,7 @@ export default function ClientsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                     Parent/Guardian Name
                   </label>
                   <input
@@ -736,7 +736,7 @@ export default function ClientsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                     UCI Number
                   </label>
                   <input
@@ -748,7 +748,7 @@ export default function ClientsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                     Service Coordinator
                   </label>
                   <input
@@ -760,7 +760,7 @@ export default function ClientsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                     POS Start Date
                   </label>
                   <input
@@ -772,7 +772,7 @@ export default function ClientsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                     POS End Date
                   </label>
                   <input
@@ -784,7 +784,7 @@ export default function ClientsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                     Language
                   </label>
                   <input
@@ -796,7 +796,7 @@ export default function ClientsPage() {
                 </div>
 
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                     Notes
                   </label>
                   <textarea
@@ -809,7 +809,7 @@ export default function ClientsPage() {
                 </div>
               </div>
 
-              <div className="border-t border-gray-200 p-6 flex justify-end space-x-3 bg-gray-50">
+              <div className="border-t border-gray-200 dark:border-gray-700 p-6 flex justify-end space-x-3 bg-gray-50 dark:bg-gray-900">
                 <button
                   type="button"
                   onClick={() => {

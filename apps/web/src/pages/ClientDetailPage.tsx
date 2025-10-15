@@ -142,10 +142,10 @@ export default function ClientDetailPage() {
   return (
     <div className="px-4 sm:px-6 lg:px-8">
       <div className="mb-8">
-        <h1 className="text-2xl font-semibold text-gray-900">
+        <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">
           {client.first_name} {client.last_name}
         </h1>
-        <p className="mt-2 text-sm text-gray-700">Client details and activity</p>
+        <p className="mt-2 text-sm text-gray-700 dark:text-gray-300">Client details and activity</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -153,83 +153,83 @@ export default function ClientDetailPage() {
         <div className="lg:col-span-2 space-y-8">
           <div className="card">
             <div className="card-header">
-              <h3 className="text-lg font-medium text-gray-900">Information</h3>
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white">Information</h3>
             </div>
             <div className="card-body">
               <dl className="grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-2">
                 <div>
-                  <dt className="text-sm font-medium text-gray-500">Email</dt>
-                  <dd className="mt-1 text-sm text-gray-900 flex items-center">
-                    <Mail className="w-4 h-4 mr-2 text-gray-400" />
+                  <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">Email</dt>
+                  <dd className="mt-1 text-sm text-gray-900 dark:text-white flex items-center">
+                    <Mail className="w-4 h-4 mr-2 text-gray-400 dark:text-gray-500" />
                     {client.email || 'Not provided'}
                   </dd>
                 </div>
                 <div>
-                  <dt className="text-sm font-medium text-gray-500">Phone</dt>
-                  <dd className="mt-1 text-sm text-gray-900 flex items-center">
-                    <Phone className="w-4 h-4 mr-2 text-gray-400" />
+                  <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">Phone</dt>
+                  <dd className="mt-1 text-sm text-gray-900 dark:text-white flex items-center">
+                    <Phone className="w-4 h-4 mr-2 text-gray-400 dark:text-gray-500" />
                     {client.phone || 'Not provided'}
                   </dd>
                 </div>
                 <div>
-                  <dt className="text-sm font-medium text-gray-500">Date of Birth</dt>
-                  <dd className="mt-1 text-sm text-gray-900 flex items-center">
-                    <Calendar className="w-4 h-4 mr-2 text-gray-400" />
+                  <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">Date of Birth</dt>
+                  <dd className="mt-1 text-sm text-gray-900 dark:text-white flex items-center">
+                    <Calendar className="w-4 h-4 mr-2 text-gray-400 dark:text-gray-500" />
                     {client.date_of_birth ? new Date(client.date_of_birth).toLocaleDateString() : 'Not provided'}
                   </dd>
                 </div>
                 <div>
-                  <dt className="text-sm font-medium text-gray-500">Member Since</dt>
-                  <dd className="mt-1 text-sm text-gray-900">
+                  <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">Member Since</dt>
+                  <dd className="mt-1 text-sm text-gray-900 dark:text-white">
                     {new Date(client.created_at).toLocaleDateString()}
                   </dd>
                 </div>
                 <div>
-                  <dt className="text-sm font-medium text-gray-500">Parent/Guardian Name</dt>
-                  <dd className="mt-1 text-sm text-gray-900 flex items-center">
-                    <User className="w-4 h-4 mr-2 text-gray-400" />
+                  <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">Parent/Guardian Name</dt>
+                  <dd className="mt-1 text-sm text-gray-900 dark:text-white flex items-center">
+                    <User className="w-4 h-4 mr-2 text-gray-400 dark:text-gray-500" />
                     {client.parent_guardian_name || 'Not provided'}
                   </dd>
                 </div>
                 <div>
-                  <dt className="text-sm font-medium text-gray-500">UCI Number</dt>
-                  <dd className="mt-1 text-sm text-gray-900 flex items-center">
-                    <FileText className="w-4 h-4 mr-2 text-gray-400" />
+                  <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">UCI Number</dt>
+                  <dd className="mt-1 text-sm text-gray-900 dark:text-white flex items-center">
+                    <FileText className="w-4 h-4 mr-2 text-gray-400 dark:text-gray-500" />
                     {client.pos_number || 'Not provided'}
                   </dd>
                 </div>
                 <div>
-                  <dt className="text-sm font-medium text-gray-500">Service Coordinator</dt>
-                  <dd className="mt-1 text-sm text-gray-900 flex items-center">
-                    <Briefcase className="w-4 h-4 mr-2 text-gray-400" />
+                  <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">Service Coordinator</dt>
+                  <dd className="mt-1 text-sm text-gray-900 dark:text-white flex items-center">
+                    <Briefcase className="w-4 h-4 mr-2 text-gray-400 dark:text-gray-500" />
                     {client.service_coordinator || 'Not provided'}
                   </dd>
                 </div>
                 <div>
-                  <dt className="text-sm font-medium text-gray-500">POS Start Date</dt>
-                  <dd className="mt-1 text-sm text-gray-900 flex items-center">
-                    <Calendar className="w-4 h-4 mr-2 text-gray-400" />
+                  <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">POS Start Date</dt>
+                  <dd className="mt-1 text-sm text-gray-900 dark:text-white flex items-center">
+                    <Calendar className="w-4 h-4 mr-2 text-gray-400 dark:text-gray-500" />
                     {client.pos_start_date ? new Date(client.pos_start_date).toLocaleDateString() : 'Not provided'}
                   </dd>
                 </div>
                 <div>
-                  <dt className="text-sm font-medium text-gray-500">POS End Date</dt>
-                  <dd className="mt-1 text-sm text-gray-900 flex items-center">
-                    <Calendar className="w-4 h-4 mr-2 text-gray-400" />
+                  <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">POS End Date</dt>
+                  <dd className="mt-1 text-sm text-gray-900 dark:text-white flex items-center">
+                    <Calendar className="w-4 h-4 mr-2 text-gray-400 dark:text-gray-500" />
                     {client.pos_end_date ? new Date(client.pos_end_date).toLocaleDateString() : 'Not provided'}
                   </dd>
                 </div>
                 <div>
-                  <dt className="text-sm font-medium text-gray-500">Language</dt>
-                  <dd className="mt-1 text-sm text-gray-900 flex items-center">
-                    <Languages className="w-4 h-4 mr-2 text-gray-400" />
+                  <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">Language</dt>
+                  <dd className="mt-1 text-sm text-gray-900 dark:text-white flex items-center">
+                    <Languages className="w-4 h-4 mr-2 text-gray-400 dark:text-gray-500" />
                     {client.language || 'Not provided'}
                   </dd>
                 </div>
                 {client.notes && (
                   <div className="sm:col-span-2">
-                    <dt className="text-sm font-medium text-gray-500">Notes</dt>
-                    <dd className="mt-1 text-sm text-gray-900">
+                    <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">Notes</dt>
+                    <dd className="mt-1 text-sm text-gray-900 dark:text-white">
                       {client.notes}
                     </dd>
                   </div>
@@ -259,7 +259,7 @@ export default function ClientDetailPage() {
           {/* Recent Check-ins */}
           <div className="card">
             <div className="card-header">
-              <h3 className="text-lg font-medium text-gray-900">Recent Check-ins</h3>
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white">Recent Check-ins</h3>
             </div>
             <div className="card-body">
               {checkIns && checkIns.length > 0 ? (
@@ -267,10 +267,10 @@ export default function ClientDetailPage() {
                   {checkIns.map((checkIn) => (
                     <div key={checkIn.id} className="flex justify-between items-center py-2 border-b border-gray-200 last:border-b-0">
                       <div>
-                        <div className="text-sm font-medium text-gray-900">
+                        <div className="text-sm font-medium text-gray-900 dark:text-white">
                           {checkIn.station || 'General'}
                         </div>
-                        <div className="text-xs text-gray-500">
+                        <div className="text-xs text-gray-500 dark:text-gray-400">
                           {checkIn.method === 'kiosk' ? 'Self Check-in' : 'Staff Assisted'}
                         </div>
                       </div>
@@ -281,7 +281,7 @@ export default function ClientDetailPage() {
                   ))}
                 </div>
               ) : (
-                <p className="text-sm text-gray-500">No recent check-ins</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">No recent check-ins</p>
               )}
             </div>
           </div>
@@ -309,7 +309,7 @@ export default function ClientDetailPage() {
           {/* Last Check-in */}
           <div className="card">
             <div className="card-header">
-              <h3 className="text-lg font-medium text-gray-900">Last Check-in</h3>
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white">Last Check-in</h3>
             </div>
             <div className="card-body">
               {checkIns && checkIns.length > 0 ? (
@@ -334,7 +334,7 @@ export default function ClientDetailPage() {
                   )}
                 </div>
               ) : (
-                <p className="text-sm text-gray-500">No check-ins yet</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">No check-ins yet</p>
               )}
             </div>
           </div>
@@ -342,7 +342,7 @@ export default function ClientDetailPage() {
           {/* Membership */}
           <div className="card">
             <div className="card-header">
-              <h3 className="text-lg font-medium text-gray-900">Membership</h3>
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white">Membership</h3>
             </div>
             <div className="card-body">
               {membership && membershipInfo ? (
@@ -370,7 +370,7 @@ export default function ClientDetailPage() {
                   </div>
                 </div>
               ) : (
-                <p className="text-sm text-gray-500">No active membership</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">No active membership</p>
               )}
             </div>
           </div>
@@ -447,9 +447,9 @@ export default function ClientDetailPage() {
           {notes && notes.length > 0 ? (
             <div className="space-y-4">
               {notes.map((note: any) => (
-                <div key={note.id} className="border border-gray-200 rounded-lg p-4 bg-gray-50">
+                <div key={note.id} className="border border-gray-200 rounded-lg p-4 bg-gray-50 dark:bg-gray-900">
                   <div className="flex justify-between items-start mb-2">
-                    <div className="flex items-center text-sm text-gray-600">
+                    <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
                       <User className="w-4 h-4 mr-2" />
                       <span className="font-medium">{note.user_username || note.user_email}</span>
                     </div>
@@ -457,7 +457,7 @@ export default function ClientDetailPage() {
                       {new Date(note.created_at).toLocaleString()}
                     </div>
                   </div>
-                  <p className="text-sm text-gray-900 whitespace-pre-wrap">{note.note}</p>
+                  <p className="text-sm text-gray-900 dark:text-white whitespace-pre-wrap">{note.note}</p>
                 </div>
               ))}
             </div>

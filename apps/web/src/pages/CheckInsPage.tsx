@@ -20,8 +20,8 @@ export default function CheckInsPage() {
     <div className="px-4 sm:px-6 lg:px-8">
       <div className="sm:flex sm:items-center">
         <div className="sm:flex-auto">
-          <h1 className="text-2xl font-semibold text-gray-900">Check-ins</h1>
-          <p className="mt-2 text-sm text-gray-700">
+          <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Check-ins</h1>
+          <p className="mt-2 text-sm text-gray-700 dark:text-gray-300">
             View recent client check-ins at your gaming center
           </p>
         </div>
@@ -33,19 +33,19 @@ export default function CheckInsPage() {
           <table className="table">
             <thead className="table-header">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Client
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Time
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Method
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Station
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Notes
                 </th>
               </tr>
@@ -53,18 +53,18 @@ export default function CheckInsPage() {
             <tbody className="table-body">
               {checkIns?.map((checkIn) => (
                 <tr key={checkIn.id}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
                     <div className="flex items-center">
-                      <User className="w-4 h-4 mr-2 text-gray-400" />
+                      <User className="w-4 h-4 mr-2 text-gray-400 dark:text-gray-500" />
                       {checkIn.client_first_name} {checkIn.client_last_name}
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                     <div className="flex items-center">
-                      <Calendar className="w-4 h-4 mr-2 text-gray-400" />
+                      <Calendar className="w-4 h-4 mr-2 text-gray-400 dark:text-gray-500" />
                       <div>
                         <div>{new Date(checkIn.happened_at).toLocaleDateString()}</div>
-                        <div className="text-xs text-gray-400">
+                        <div className="text-xs text-gray-400 dark:text-gray-500">
                           {new Date(checkIn.happened_at).toLocaleTimeString()}
                         </div>
                       </div>
@@ -81,10 +81,10 @@ export default function CheckInsPage() {
                       {checkIn.method === 'kiosk' ? 'Kiosk' : 'Staff'}
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                     {checkIn.station || 'N/A'}
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-500">
+                  <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
                     {checkIn.notes || '-'}
                   </td>
                 </tr>
@@ -94,7 +94,7 @@ export default function CheckInsPage() {
 
           {(!checkIns || checkIns.length === 0) && (
             <div className="text-center py-12">
-              <p className="text-gray-500">No check-ins recorded yet</p>
+              <p className="text-gray-500 dark:text-gray-400">No check-ins recorded yet</p>
             </div>
           )}
         </div>
