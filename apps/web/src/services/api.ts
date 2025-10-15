@@ -1,4 +1,4 @@
-import axios, { AxiosInstance, AxiosResponse } from 'axios'
+import axios, { AxiosInstance } from 'axios'
 import toast from 'react-hot-toast'
 import {
   User,
@@ -13,12 +13,11 @@ import {
   KioskCheckInForm,
   MembershipStats,
   CheckInStats,
-  Tag,
-  ApiError
+  Tag
 } from '../types'
 
 class ApiService {
-  private api: AxiosInstance
+  public api: AxiosInstance
 
   constructor() {
     const apiUrl = import.meta.env.VITE_API_URL || ''
@@ -213,18 +212,23 @@ class ApiService {
     return response.data
   }
 
-  async createUser(data: { email: string; password: string; role: string; is_active: boolean }): Promise<User> {
-    const response = await this.api.post<User>('/users', data)
+  async createUser(data: { username: string; email: string; role: string }): Promise<any> {
+    const response = await this.api.post<any>('/users', data)
     return response.data
   }
 
-  async updateUser(id: string, data: { email?: string; password?: string; role?: string; is_active?: boolean }): Promise<User> {
+  async updateUser(id: string, data: { username?: string; role?: string; is_active?: boolean }): Promise<User> {
     const response = await this.api.patch<User>(`/users/${id}`, data)
     return response.data
   }
 
   async deleteUser(id: string): Promise<void> {
     await this.api.delete(`/users/${id}`)
+  }
+
+  async resetUserPassword(userId: string): Promise<any> {
+    const response = await this.api.post<any>('/password/initiate-reset', { user_id: userId })
+    return response.data
   }
 
   // Client Notes

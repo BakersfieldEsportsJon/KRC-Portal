@@ -6,6 +6,8 @@ export interface User {
   role: string
   is_active: boolean
   dark_mode: boolean
+  password_setup_required?: boolean
+  last_password_change?: string
   created_at: string
   updated_at: string
 }

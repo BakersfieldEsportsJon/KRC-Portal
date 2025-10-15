@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from 'react-query'
 import apiService from '../services/api'
 import { User as UserType } from '../types'
-import { Plus, X, Edit, Trash2, Shield, UserX } from 'lucide-react'
+import { Plus, X, Edit, Trash2, Shield, UserX, KeyRound } from 'lucide-react'
 import toast from 'react-hot-toast'
 
 export default function AdminPage() {
@@ -11,9 +11,8 @@ export default function AdminPage() {
   const [editingUser, setEditingUser] = useState<UserType | null>(null)
   const [formData, setFormData] = useState({
     username: '',
-    password: '',
-    role: 'staff',
-    is_active: true
+    email: '',
+    role: 'staff'
   })
 
   const queryClient = useQueryClient()
@@ -23,11 +22,11 @@ export default function AdminPage() {
   const createMutation = useMutation(
     (data: typeof formData) => apiService.createUser(data),
     {
-      onSuccess: () => {
+      onSuccess: (response: any) => {
         queryClient.invalidateQueries('users')
         setShowAddModal(false)
-        setFormData({ username: '', password: '', role: 'staff', is_active: true })
-        toast.success('User created successfully')
+        setFormData({ username: '', email: '', role: 'staff' })
+        toast.success(response.message || 'User created successfully. Password setup email sent.')
       },
       onError: (error: any) => {
         toast.error(error.response?.data?.detail || 'Failed to create user')
@@ -43,7 +42,7 @@ export default function AdminPage() {
         queryClient.invalidateQueries('users')
         setShowEditModal(false)
         setEditingUser(null)
-        setFormData({ username: '', password: '', role: 'staff', is_active: true })
+        setFormData({ username: '', email: '', role: 'staff' })
         toast.success('User updated successfully')
       },
       onError: (error: any) => {
@@ -65,6 +64,18 @@ export default function AdminPage() {
     }
   )
 
+  const resetPasswordMutation = useMutation(
+    (userId: string) => apiService.resetUserPassword(userId),
+    {
+      onSuccess: (response: any) => {
+        toast.success(response.message || 'Password reset email sent successfully')
+      },
+      onError: (error: any) => {
+        toast.error(error.response?.data?.detail || 'Failed to reset password')
+      }
+    }
+  )
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     createMutation.mutate(formData)
@@ -76,12 +87,15 @@ export default function AdminPage() {
       const updateData: any = {
         username: formData.username,
         role: formData.role,
-        is_active: formData.is_active
-      }
-      if (formData.password) {
-        updateData.password = formData.password
+        is_active: editingUser.is_active
       }
       updateMutation.mutate({ userId: editingUser.id, data: updateData })
+    }
+  }
+
+  const handleResetPassword = (user: UserType) => {
+    if (window.confirm(`Send password reset email to ${user.email}?`)) {
+      resetPasswordMutation.mutate(user.id)
     }
   }
 
@@ -163,30 +177,44 @@ export default function AdminPage() {
                       </span>
                     </td>
                     <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">
-                      <span className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        user.is_active
-                          ? 'bg-green-100 text-green-800'
-                          : 'bg-red-100 text-red-800'
-                      }`}>
-                        {user.is_active ? 'Active' : 'Inactive'}
-                      </span>
+                      <div className="flex flex-col gap-1">
+                        <span className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                          user.is_active
+                            ? 'bg-green-100 text-green-800'
+                            : 'bg-red-100 text-red-800'
+                        }`}>
+                          {user.is_active ? 'Active' : 'Inactive'}
+                        </span>
+                        {user.password_setup_required && (
+                          <span className="inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                            Setup Required
+                          </span>
+                        )}
+                      </div>
                     </td>
                     <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">
                       {new Date(user.created_at).toLocaleDateString()}
                     </td>
                     <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-0 space-x-3">
                       <button
+                        onClick={() => handleResetPassword(user)}
+                        className="text-blue-600 hover:text-blue-900"
+                        title="Reset Password"
+                      >
+                        <KeyRound className="w-4 h-4 inline" />
+                      </button>
+                      <button
                         onClick={() => {
                           setEditingUser(user)
                           setFormData({
                             username: user.username,
-                            password: '',
-                            role: user.role,
-                            is_active: user.is_active
+                            email: user.email,
+                            role: user.role
                           })
                           setShowEditModal(true)
                         }}
                         className="text-primary-600 hover:text-primary-900"
+                        title="Edit User"
                       >
                         <Edit className="w-4 h-4 inline" />
                       </button>
@@ -238,16 +266,19 @@ export default function AdminPage() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Password *
+                    Email *
                   </label>
                   <input
-                    type="password"
+                    type="email"
                     required
-                    minLength={8}
-                    value={formData.password}
-                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     className="input mt-1"
+                    placeholder="user@example.com"
                   />
+                  <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                    A password setup link will be sent to this email address
+                  </p>
                 </div>
 
                 <div>
@@ -262,18 +293,6 @@ export default function AdminPage() {
                     <option value="staff">Staff</option>
                     <option value="admin">Admin</option>
                   </select>
-                </div>
-
-                <div>
-                  <label className="flex items-center">
-                    <input
-                      type="checkbox"
-                      checked={formData.is_active}
-                      onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
-                      className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
-                    />
-                    <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">Active</span>
-                  </label>
                 </div>
               </div>
 
@@ -334,19 +353,6 @@ export default function AdminPage() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                    New Password (leave blank to keep current)
-                  </label>
-                  <input
-                    type="password"
-                    minLength={8}
-                    value={formData.password}
-                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                    className="input mt-1"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                     Role *
                   </label>
                   <select
@@ -357,18 +363,6 @@ export default function AdminPage() {
                     <option value="staff">Staff</option>
                     <option value="admin">Admin</option>
                   </select>
-                </div>
-
-                <div>
-                  <label className="flex items-center">
-                    <input
-                      type="checkbox"
-                      checked={formData.is_active}
-                      onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
-                      className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
-                    />
-                    <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">Active</span>
-                  </label>
                 </div>
               </div>
 

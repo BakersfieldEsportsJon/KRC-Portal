@@ -7,14 +7,12 @@ import { CheckCircle, AlertCircle, Phone, CreditCard } from 'lucide-react'
 
 export default function KioskPage() {
   const [loading, setLoading] = useState(false)
-  const [checkInSuccess, setCheckInSuccess] = useState(false)
   const [clientInfo, setClientInfo] = useState<any>(null)
   const [step, setStep] = useState<'lookup' | 'confirm' | 'success'>('lookup')
 
   const {
     register,
     handleSubmit,
-    formState: { errors },
     reset,
     getValues,
   } = useForm<KioskCheckInForm>()
@@ -51,7 +49,6 @@ export default function KioskPage() {
         station: formData.station || 'Kiosk',
       })
       setStep('success')
-      setCheckInSuccess(true)
       toast.success('Check-in successful!')
     } catch (error) {
       toast.error('Check-in failed. Please try again or ask staff for help.')
@@ -63,7 +60,6 @@ export default function KioskPage() {
   const startOver = () => {
     setStep('lookup')
     setClientInfo(null)
-    setCheckInSuccess(false)
     reset()
   }
 

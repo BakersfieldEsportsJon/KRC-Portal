@@ -149,7 +149,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Expiring Memberships Alert */}
-      {membershipStats?.expiring_30_days > 0 && (
+      {(membershipStats?.expiring_30_days ?? 0) > 0 && (
         <div className="mt-8">
           <div className="bg-yellow-50 border border-yellow-200 rounded-md p-4">
             <div className="flex">
