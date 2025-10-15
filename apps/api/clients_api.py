@@ -990,9 +990,10 @@ async def get_recent_notes(
     try:
         cutoff_date = datetime.now() - timedelta(days=days)
 
-        # Get notes with user and client info
+        # Get notes with user and client info - explicitly specify join order
         notes_result = await db.execute(
             select(ClientNote, User, Client)
+            .select_from(ClientNote)
             .join(User, ClientNote.user_id == User.id)
             .join(Client, ClientNote.client_id == Client.id)
             .where(ClientNote.created_at >= cutoff_date)
