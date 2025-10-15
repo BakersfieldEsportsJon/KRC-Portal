@@ -2,18 +2,17 @@ import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from 'react-query'
 import apiService from '../services/api'
 import { User as UserType } from '../types'
-import { Plus, X, Edit, Trash2, Shield, UserX, KeyRound } from 'lucide-react'
+import { Plus, X, Edit, Trash2, Shield, UserX } from 'lucide-react'
 import toast from 'react-hot-toast'
 
 export default function AdminPage() {
   const [showAddModal, setShowAddModal] = useState(false)
   const [showEditModal, setShowEditModal] = useState(false)
-  const [showLinkModal, setShowLinkModal] = useState(false)
-  const [setupLink, setSetupLink] = useState('')
   const [editingUser, setEditingUser] = useState<UserType | null>(null)
   const [formData, setFormData] = useState({
     username: '',
     email: '',
+    password: '',
     role: 'staff'
   })
 
@@ -24,18 +23,11 @@ export default function AdminPage() {
   const createMutation = useMutation(
     (data: typeof formData) => apiService.createUser(data),
     {
-      onSuccess: (response: any) => {
+      onSuccess: () => {
         queryClient.invalidateQueries('users')
         setShowAddModal(false)
-        setFormData({ username: '', email: '', role: 'staff' })
-
-        // Show setup link in modal for local hosting
-        if (response.setup_link) {
-          setSetupLink(response.setup_link)
-          setShowLinkModal(true)
-        } else {
-          toast.success('User created successfully')
-        }
+        setFormData({ username: '', email: '', password: '', role: 'staff' })
+        toast.success('User created successfully. They will be prompted to change password on first login.')
       },
       onError: (error: any) => {
         toast.error(error.response?.data?.detail || 'Failed to create user')
@@ -51,7 +43,7 @@ export default function AdminPage() {
         queryClient.invalidateQueries('users')
         setShowEditModal(false)
         setEditingUser(null)
-        setFormData({ username: '', email: '', role: 'staff' })
+        setFormData({ username: '', email: '', password: '', role: 'staff' })
         toast.success('User updated successfully')
       },
       onError: (error: any) => {
@@ -73,24 +65,6 @@ export default function AdminPage() {
     }
   )
 
-  const resetPasswordMutation = useMutation(
-    (userId: string) => apiService.resetUserPassword(userId),
-    {
-      onSuccess: (response: any) => {
-        // Show reset link in modal for local hosting
-        if (response.reset_link) {
-          setSetupLink(response.reset_link)
-          setShowLinkModal(true)
-        } else {
-          toast.success(response.message || 'Password reset link generated')
-        }
-      },
-      onError: (error: any) => {
-        toast.error(error.response?.data?.detail || 'Failed to reset password')
-      }
-    }
-  )
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     createMutation.mutate(formData)
@@ -108,24 +82,10 @@ export default function AdminPage() {
     }
   }
 
-  const handleResetPassword = (user: UserType) => {
-    if (window.confirm(`Generate password reset link for ${user.username}?`)) {
-      resetPasswordMutation.mutate(user.id)
-    }
-  }
-
   const handleDelete = (user: UserType) => {
     if (window.confirm(`Are you sure you want to delete ${user.username}?`)) {
       deleteMutation.mutate(user.id)
     }
-  }
-
-  const copyToClipboard = () => {
-    navigator.clipboard.writeText(setupLink).then(() => {
-      toast.success('Link copied to clipboard!')
-    }).catch(() => {
-      toast.error('Failed to copy link')
-    })
   }
 
   if (isLoading) {
@@ -220,18 +180,12 @@ export default function AdminPage() {
                     </td>
                     <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-0 space-x-3">
                       <button
-                        onClick={() => handleResetPassword(user)}
-                        className="text-blue-600 hover:text-blue-900"
-                        title="Reset Password"
-                      >
-                        <KeyRound className="w-4 h-4 inline" />
-                      </button>
-                      <button
                         onClick={() => {
                           setEditingUser(user)
                           setFormData({
                             username: user.username,
                             email: user.email,
+                            password: '',
                             role: user.role
                           })
                           setShowEditModal(true)
@@ -244,6 +198,7 @@ export default function AdminPage() {
                       <button
                         onClick={() => handleDelete(user)}
                         className="text-red-600 hover:text-red-900"
+                        title="Delete User"
                       >
                         <Trash2 className="w-4 h-4 inline" />
                       </button>
@@ -299,8 +254,23 @@ export default function AdminPage() {
                     className="input mt-1"
                     placeholder="user@example.com"
                   />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Temporary Password *
+                  </label>
+                  <input
+                    type="password"
+                    required
+                    minLength={4}
+                    value={formData.password}
+                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                    className="input mt-1"
+                    placeholder="Enter temporary password"
+                  />
                   <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                    You will receive a password setup link to share with this user
+                    User will be required to change password on first login
                   </p>
                 </div>
 
@@ -409,58 +379,6 @@ export default function AdminPage() {
                 </button>
               </div>
             </form>
-          </div>
-        </div>
-      )}
-
-      {/* Password Setup Link Modal */}
-      {showLinkModal && (
-        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-2xl w-full mx-4">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Password Setup Link</h2>
-              <button
-                onClick={() => {
-                  setShowLinkModal(false)
-                  setSetupLink('')
-                }}
-                className="text-gray-400 hover:text-gray-600"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <div className="space-y-4">
-              <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-md p-4">
-                <p className="text-sm text-blue-800 dark:text-blue-300 mb-2">
-                  Since email is not configured, share this link directly with the user to set up their password:
-                </p>
-              </div>
-
-              <div className="bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-md p-4">
-                <code className="text-sm text-gray-900 dark:text-gray-300 break-all">
-                  {setupLink}
-                </code>
-              </div>
-
-              <div className="flex justify-end space-x-3">
-                <button
-                  onClick={() => {
-                    setShowLinkModal(false)
-                    setSetupLink('')
-                  }}
-                  className="btn-secondary"
-                >
-                  Close
-                </button>
-                <button
-                  onClick={copyToClipboard}
-                  className="btn-primary"
-                >
-                  Copy Link
-                </button>
-              </div>
-            </div>
           </div>
         </div>
       )}

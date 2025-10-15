@@ -212,7 +212,7 @@ class ApiService {
     return response.data
   }
 
-  async createUser(data: { username: string; email: string; role: string }): Promise<any> {
+  async createUser(data: { username: string; email: string; password: string; role: string }): Promise<any> {
     const response = await this.api.post<any>('/users', data)
     return response.data
   }
