@@ -26,7 +26,7 @@ export default function DashboardPage() {
 
   const stats = [
     {
-      name: 'Active Memberships',
+      name: 'Active Clients',
       value: membershipStats?.total_active || 0,
       icon: Users,
       change: '+12%',
@@ -40,18 +40,18 @@ export default function DashboardPage() {
       changeType: 'positive',
     },
     {
-      name: 'Expiring Soon',
+      name: 'Expiring Soon (30 days)',
       value: membershipStats?.expiring_30_days || 0,
       icon: Calendar,
       change: '-2%',
       changeType: 'negative',
     },
     {
-      name: 'Unique Visitors This Month',
-      value: checkInStats?.unique_clients_month || 0,
+      name: 'Expired Clients',
+      value: membershipStats?.expired || 0,
       icon: TrendingUp,
-      change: '+8%',
-      changeType: 'positive',
+      change: '-5%',
+      changeType: 'negative',
     },
   ]
 

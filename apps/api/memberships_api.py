@@ -39,10 +39,10 @@ class MembershipWithClient(BaseModel):
 
 
 class MembershipStats(BaseModel):
-    total: int
-    active: int
-    expiring_soon: int
-    expired: int
+    total_active: int  # Active clients with valid memberships
+    expiring_30_days: int  # Clients with memberships expiring in next 30 days
+    expired: int  # Clients with expired memberships
+    plans: dict  # Plan distribution (kept for compatibility)
 
 
 # Routes
@@ -91,41 +91,49 @@ async def get_membership_stats(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    """Get membership statistics"""
+    """Get membership statistics - counts unique clients, not memberships"""
     try:
         today = date.today()
         expiry_threshold = today + timedelta(days=30)
 
-        # Total memberships
-        total_result = await db.execute(select(func.count(Membership.id)))
-        total = total_result.scalar() or 0
-
-        # Active memberships (not expired)
+        # Active clients (distinct clients with memberships ending >= today)
         active_result = await db.execute(
-            select(func.count(Membership.id)).where(Membership.ends_on >= today)
+            select(func.count(func.distinct(Membership.client_id)))
+            .where(Membership.ends_on >= today)
         )
-        active = active_result.scalar() or 0
+        total_active = active_result.scalar() or 0
 
-        # Expiring soon (within 30 days)
+        # Clients expiring in next 30 days (distinct clients with memberships ending between today and 30 days)
         expiring_result = await db.execute(
-            select(func.count(Membership.id)).where(
+            select(func.count(func.distinct(Membership.client_id)))
+            .where(
                 Membership.ends_on >= today,
                 Membership.ends_on <= expiry_threshold
             )
         )
-        expiring_soon = expiring_result.scalar() or 0
+        expiring_30_days = expiring_result.scalar() or 0
 
-        # Expired
+        # Expired clients (distinct clients with most recent membership expired)
+        # Get clients whose latest membership has expired
         expired_result = await db.execute(
-            select(func.count(Membership.id)).where(Membership.ends_on < today)
+            select(func.count(func.distinct(Membership.client_id)))
+            .where(Membership.ends_on < today)
         )
         expired = expired_result.scalar() or 0
 
+        # Get plan distribution for active memberships
+        plans_result = await db.execute(
+            select(Membership.plan_code, func.count(func.distinct(Membership.client_id)))
+            .where(Membership.ends_on >= today)
+            .group_by(Membership.plan_code)
+        )
+        plans = {plan: count for plan, count in plans_result.all()}
+
         return MembershipStats(
-            total=total,
-            active=active,
-            expiring_soon=expiring_soon,
-            expired=expired
+            total_active=total_active,
+            expiring_30_days=expiring_30_days,
+            expired=expired,
+            plans=plans
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to get membership stats: {str(e)}")
