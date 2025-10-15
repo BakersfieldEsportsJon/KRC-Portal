@@ -10,13 +10,21 @@
 - [ ] Test backup restoration process
 
 ### 2. Security & Authentication
-- [ ] Generate strong SECRET_KEY: `openssl rand -hex 32`
-- [ ] Generate strong JWT_SECRET_KEY: `openssl rand -hex 32`
-- [ ] Change all default passwords in database
-- [ ] Remove or disable test/demo user accounts
+- [x] ✅ Generate strong SECRET_KEY: `openssl rand -hex 32` (COMPLETED 2025-10-15)
+- [x] ✅ Generate strong JWT_SECRET_KEY: `openssl rand -hex 32` (COMPLETED 2025-10-15)
+- [x] ✅ Remove .env files from git tracking (COMPLETED 2025-10-15)
+- [x] ✅ Rotate all production secrets (COMPLETED 2025-10-15)
+- [ ] ⚠️ **CRITICAL**: Change admin password in database to secure value (12+ chars)
+- [ ] ⚠️ **CRITICAL**: Remove or disable test/demo user accounts
+- [ ] ⚠️ **CRITICAL**: Implement password setup flow for new users (admins should NOT set passwords)
+- [ ] ⚠️ **CRITICAL**: Implement admin password reset for staff (staff cannot reset their own)
 - [ ] Verify all API endpoints require authentication
 - [x] ✅ Role-based access controls implemented (Admin/Staff)
 - [ ] Test role-based permissions thoroughly
+- [x] ✅ Rate limiting implemented on login endpoint (5/min per IP)
+- [x] ✅ Security headers middleware added (HSTS, XSS, etc.)
+- [x] ✅ CORS configuration secured (no wildcards)
+- [x] ✅ Password requirements strengthened (12 chars, special chars, no common passwords)
 
 ### 3. Environment Configuration
 - [ ] Set `APP_ENV=production` in `.env`
@@ -263,5 +271,63 @@ Deployment is successful when:
 
 ---
 
-**Last Updated:** 2025-10-03
-**Version:** 1.0.0
+---
+
+## 🔐 Additional Security Tasks (From Security Audit 2025-10-15)
+
+### HIGH Priority (Should complete before production)
+- [ ] **HIGH-003**: Fix SQL injection risks in kiosk client lookup
+  - Sanitize LIKE patterns to prevent wildcard injection
+  - Use exact matches where possible
+  - File: `modules/kiosk/service.py`
+- [ ] **HIGH-004**: Add rate limiting to public kiosk endpoints
+  - Limit check-ins to 10/minute per IP
+  - Implement device fingerprinting for kiosks
+  - File: `modules/kiosk/router.py`
+- [ ] **HIGH-006**: Add input validation to CSV import
+  - Limit file size to 10MB max
+  - Validate MIME type (not just extension)
+  - Prevent CSV injection attacks
+  - File: `apps/api/clients_api.py`
+
+### MEDIUM Priority (Fix soon after launch)
+- [ ] **MEDIUM-001**: Remove console.log from production frontend
+  - Files: `apps/web/src/hooks/useAuth.tsx`, `apps/web/src/pages/LoginPage.tsx`
+- [ ] **MEDIUM-002**: Implement CSRF protection
+  - Add CSRF tokens to state-changing operations
+  - Or use SameSite cookies
+- [ ] **MEDIUM-003**: Move tokens from localStorage to httpOnly cookies
+  - More secure against XSS attacks
+  - File: `apps/web/src/hooks/useAuth.tsx`
+- [ ] **MEDIUM-004**: Implement account lockout after failed logins
+  - Lock account after 5 failed attempts
+  - 15-minute lockout window
+  - Use Redis for tracking
+- [ ] **MEDIUM-007**: Add audit logging for sensitive operations
+  - Log user creation/deletion
+  - Log password changes
+  - Log permission changes
+  - Log data exports
+
+### LOW Priority (Future improvements)
+- [ ] Implement API versioning strategy
+- [ ] Add Content Security Policy headers
+- [ ] Set up dependency scanning (Dependabot/Snyk)
+- [ ] Implement MFA for admin accounts
+- [ ] Add database connection pooling optimization
+
+---
+
+## 📚 Security Documentation
+
+- **SECURITY_SETUP.md**: Secret rotation procedures and emergency response
+- **Security Audit Report**: Completed 2025-10-15, identified 28 issues
+  - 3 CRITICAL (all fixed)
+  - 8 HIGH (5 fixed, 3 remain)
+  - 12 MEDIUM (2 partially addressed)
+  - 5 LOW (documented for future)
+
+---
+
+**Last Updated:** 2025-10-15
+**Version:** 1.1.0 (Security Audit Applied)
