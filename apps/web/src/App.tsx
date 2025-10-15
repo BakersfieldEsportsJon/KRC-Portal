@@ -6,6 +6,7 @@ import KioskLayout from './components/KioskLayout'
 import LoadingScreen from './components/LoadingScreen'
 import LoginPage from './pages/LoginPage'
 import PasswordSetupPage from './pages/PasswordSetupPage'
+import ChangePasswordPage from './pages/ChangePasswordPage'
 import DashboardPage from './pages/DashboardPage'
 import ClientsPage from './pages/ClientsPage'
 import ClientDetailPage from './pages/ClientDetailPage'
@@ -16,6 +17,7 @@ import NotFoundPage from './pages/NotFoundPage'
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth()
+  const location = window.location.pathname
 
   if (loading) {
     return <LoadingScreen />
@@ -23,6 +25,16 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
   if (!user) {
     return <Navigate to="/login" replace />
+  }
+
+  // If user needs to change password and not already on change-password page
+  if (user.password_setup_required && location !== '/change-password') {
+    return <Navigate to="/change-password" replace />
+  }
+
+  // If user is on change-password page but doesn't need to change password
+  if (!user.password_setup_required && location === '/change-password') {
+    return <Navigate to="/dashboard" replace />
   }
 
   return <>{children}</>
@@ -54,6 +66,11 @@ function AppRoutes() {
     <Routes>
       <Route path="/login" element={<LoginPage />} />
       <Route path="/setup-password" element={<PasswordSetupPage />} />
+      <Route path="/change-password" element={
+        <ProtectedRoute>
+          <ChangePasswordPage />
+        </ProtectedRoute>
+      } />
       <Route
         path="/"
         element={

@@ -70,6 +70,10 @@ class ApiService {
     return response.data
   }
 
+  async changePassword(data: { current_password: string; new_password: string }): Promise<void> {
+    await this.api.post('/auth/change-password', data)
+  }
+
   async logout(): Promise<void> {
     localStorage.removeItem('access_token')
     localStorage.removeItem('refresh_token')

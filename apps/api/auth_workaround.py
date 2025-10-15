@@ -48,6 +48,7 @@ class UserResponse(BaseModel):
     role: str
     is_active: bool
     dark_mode: bool
+    password_setup_required: bool = False
 
 
 # Database dependency
@@ -199,7 +200,8 @@ async def get_current_user_info(
         email=current_user.email,
         role=current_user.role,
         is_active=current_user.is_active,
-        dark_mode=current_user.dark_mode
+        dark_mode=current_user.dark_mode,
+        password_setup_required=current_user.password_setup_required
     )
 
 
@@ -224,5 +226,47 @@ async def update_dark_mode(
         email=current_user.email,
         role=current_user.role,
         is_active=current_user.is_active,
-        dark_mode=current_user.dark_mode
+        dark_mode=current_user.dark_mode,
+        password_setup_required=current_user.password_setup_required
     )
+
+
+class ChangePasswordRequest(BaseModel):
+    current_password: str
+    new_password: str
+
+
+@router.post("/change-password")
+async def change_password(
+    request: ChangePasswordRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Change password for current user"""
+    from modules.core_auth.utils import is_strong_password
+
+    # Verify current password
+    if not verify_password(request.current_password, current_user.password_hash):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Current password is incorrect"
+        )
+
+    # Validate new password strength
+    is_strong, message = is_strong_password(request.new_password)
+    if not is_strong:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=message
+        )
+
+    # Update password
+    current_user.password_hash = pwd_context.hash(request.new_password)
+    current_user.password_setup_required = False
+    current_user.last_password_change = datetime.utcnow()
+
+    await db.commit()
+
+    logger.info(f"Password changed successfully for user: {current_user.username}")
+
+    return {"message": "Password changed successfully"}
