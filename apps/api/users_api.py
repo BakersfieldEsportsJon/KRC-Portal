@@ -197,7 +197,6 @@ async def update_user(
                 detail="Username already registered"
             )
         user.username = user_data.username
-        user.email = f"{user_data.username}@example.com"  # Update placeholder email
 
     if user_data.password:
         user.password_hash = pwd_context.hash(user_data.password)
