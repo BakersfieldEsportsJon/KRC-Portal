@@ -48,7 +48,6 @@ class UserResponse(BaseModel):
     role: str
     is_active: bool
     dark_mode: bool
-    password_setup_required: bool = False
 
 
 # Database dependency
@@ -76,8 +75,6 @@ class UserWorkaround(Base):
     mfa_secret = Column(String(255), nullable=True)
     is_active = Column(Boolean, default=True, nullable=False)
     dark_mode = Column(Boolean, default=False, nullable=False)
-    password_setup_required = Column(Boolean, default=False, nullable=False)
-    last_password_change = Column(DateTime, nullable=True)
     created_at = Column(DateTime, nullable=False)
     updated_at = Column(DateTime, nullable=False)
 
@@ -142,12 +139,9 @@ async def login(
 
     Rate limit: 5 requests per minute per IP address
     """
-    from slowapi import Limiter
     from slowapi.util import get_remote_address
 
-    limiter = request.app.state.limiter
-    # Apply rate limit: 5 attempts per minute
-    limiter.limit("5/minute")(lambda: None)()
+    # Rate limiting is applied at the app level via slowapi middleware
 
     # Mask username in logs for privacy (show only first 3 chars)
     masked_username = login_data.username[:3] + "***" if len(login_data.username) > 3 else "***"
@@ -200,8 +194,7 @@ async def get_current_user_info(
         email=current_user.email,
         role=current_user.role,
         is_active=current_user.is_active,
-        dark_mode=current_user.dark_mode,
-        password_setup_required=current_user.password_setup_required
+        dark_mode=current_user.dark_mode
     )
 
 
@@ -226,8 +219,7 @@ async def update_dark_mode(
         email=current_user.email,
         role=current_user.role,
         is_active=current_user.is_active,
-        dark_mode=current_user.dark_mode,
-        password_setup_required=current_user.password_setup_required
+        dark_mode=current_user.dark_mode
     )
 
 
@@ -262,8 +254,6 @@ async def change_password(
 
     # Update password
     current_user.password_hash = pwd_context.hash(request.new_password)
-    current_user.password_setup_required = False
-    current_user.last_password_change = datetime.utcnow()
 
     await db.commit()
 

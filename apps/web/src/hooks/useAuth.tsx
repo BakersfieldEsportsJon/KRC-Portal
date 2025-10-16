@@ -83,21 +83,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!user) return
 
     const newDarkMode = !user.dark_mode
+    const previousDarkMode = user.dark_mode
+
+    // Optimistically update the UI immediately
+    setUser({ ...user, dark_mode: newDarkMode })
+
+    // Apply dark mode to document immediately
+    if (newDarkMode) {
+      document.documentElement.classList.add('dark')
+    } else {
+      document.documentElement.classList.remove('dark')
+    }
 
     try {
+      // Update on server
       const updatedUser = await apiService.updateDarkMode(newDarkMode)
       setUser(updatedUser)
+      toast.success(`Dark mode ${newDarkMode ? 'enabled' : 'disabled'}`)
+    } catch (error) {
+      console.error('Failed to toggle dark mode:', error)
 
-      // Apply dark mode to document
-      if (newDarkMode) {
+      // Rollback on failure
+      setUser({ ...user, dark_mode: previousDarkMode })
+
+      // Revert dark mode to document
+      if (previousDarkMode) {
         document.documentElement.classList.add('dark')
       } else {
         document.documentElement.classList.remove('dark')
       }
 
-      toast.success(`Dark mode ${newDarkMode ? 'enabled' : 'disabled'}`)
-    } catch (error) {
-      console.error('Failed to toggle dark mode:', error)
       toast.error('Failed to toggle dark mode')
     }
   }
