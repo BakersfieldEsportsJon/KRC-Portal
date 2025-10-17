@@ -74,7 +74,7 @@ class UserWorkaround(Base):
     role = Column(String(50), nullable=False, default="staff")
     mfa_secret = Column(String(255), nullable=True)
     is_active = Column(Boolean, default=True, nullable=False)
-    dark_mode = Column(Boolean, default=False, nullable=False)
+    dark_mode = Column(Boolean, default=True, nullable=False)  # Default to dark mode
     created_at = Column(DateTime, nullable=False)
     updated_at = Column(DateTime, nullable=False)
 

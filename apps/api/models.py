@@ -21,19 +21,8 @@ client_tags = Table(
 )
 
 
-class User(Base):
-    """User model for authentication"""
-    __tablename__ = "users"
-    __table_args__ = {'extend_existing': True}
-
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    email = Column(String(255), unique=True, nullable=False, index=True)
-    password_hash = Column(String(255), nullable=False)
-    role = Column(String(50), nullable=False, default="staff")
-    mfa_secret = Column(String(255), nullable=True)
-    is_active = Column(Boolean, default=True, nullable=False)
-    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
-    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
+# NOTE: User model is defined in auth_workaround.py - do not define it here
+# to avoid duplicate index creation issues
 
 
 class Client(Base):
