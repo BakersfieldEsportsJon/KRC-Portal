@@ -10,7 +10,8 @@ from datetime import datetime
 from passlib.context import CryptContext
 
 from core.database import AsyncSessionLocal
-from auth_workaround import get_current_user, User
+from auth_workaround import get_current_user
+from models import User
 
 router = APIRouter(prefix="/users", tags=["users"])
 pwd_context = CryptContext(schemes=["bcrypt", "argon2"], deprecated="auto")

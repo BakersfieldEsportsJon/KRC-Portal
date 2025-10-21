@@ -12,9 +12,9 @@ import logging
 import csv
 import io
 
-from models import Client, ContactMethod, Consent, Tag, Membership, CheckIn, CheckInMethod, ClientNote
+from models import Client, ContactMethod, Consent, Tag, Membership, CheckIn, CheckInMethod, ClientNote, User
 from core.database import AsyncSessionLocal
-from auth_workaround import get_current_user, User
+from auth_workaround import get_current_user
 
 logger = logging.getLogger(__name__)
 

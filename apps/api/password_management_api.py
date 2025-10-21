@@ -11,7 +11,8 @@ import logging
 
 from core.database import AsyncSessionLocal
 from core.config import settings
-from auth_workaround import User, get_current_user, pwd_context
+from auth_workaround import get_current_user, pwd_context
+from models import User
 from models_password_reset import PasswordResetToken
 from modules.core_auth.utils import is_strong_password
 

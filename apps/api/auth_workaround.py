@@ -56,30 +56,8 @@ async def get_db():
         yield session
 
 
-# Simple User model for auth workaround (separate from core_auth to avoid ORM conflicts)
-from sqlalchemy import Column, String, Boolean, DateTime
-from sqlalchemy.dialects.postgresql import UUID
-from core.database import Base
-import uuid
-
-
-class UserWorkaround(Base):
-    __tablename__ = "users"
-    __table_args__ = {'extend_existing': True}
-
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    username = Column(String(100), unique=True, nullable=True, index=True)
-    email = Column(String(255), unique=True, nullable=False, index=True)
-    password_hash = Column(String(255), nullable=False)
-    role = Column(String(50), nullable=False, default="staff")
-    mfa_secret = Column(String(255), nullable=True)
-    is_active = Column(Boolean, default=True, nullable=False)
-    dark_mode = Column(Boolean, default=True, nullable=False)  # Default to dark mode
-    created_at = Column(DateTime, nullable=False)
-    updated_at = Column(DateTime, nullable=False)
-
-# Use the workaround model
-User = UserWorkaround
+# Import User model from centralized models file
+from models import User
 
 
 # Auth functions

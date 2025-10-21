@@ -10,9 +10,9 @@ from typing import Optional
 from uuid import UUID
 import pytz
 
-from models import CheckIn, Client, Membership, CheckInMethod
+from models import CheckIn, Client, Membership, CheckInMethod, User
 from core.database import AsyncSessionLocal
-from auth_workaround import get_current_user, User
+from auth_workaround import get_current_user
 from core.config import settings
 
 router = APIRouter(prefix="/checkins", tags=["Check-ins"])

@@ -8,9 +8,9 @@ from pydantic import BaseModel
 from typing import List
 from datetime import date, datetime, timedelta
 
-from models import Membership, Client
+from models import Membership, Client, User
 from core.database import AsyncSessionLocal
-from auth_workaround import get_current_user, User
+from auth_workaround import get_current_user
 
 router = APIRouter(prefix="/memberships", tags=["Memberships"])
 
