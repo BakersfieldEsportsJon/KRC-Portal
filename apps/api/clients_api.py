@@ -12,9 +12,9 @@ import logging
 import csv
 import io
 
-from models import Client, ContactMethod, Consent, Tag, Membership, CheckIn, CheckInMethod, ClientNote
+from models import Client, ContactMethod, Consent, Tag, Membership, CheckIn, CheckInMethod, ClientNote, User
 from core.database import AsyncSessionLocal
-from auth_workaround import get_current_user, User
+from auth_workaround import get_current_user
 
 logger = logging.getLogger(__name__)
 
@@ -287,6 +287,16 @@ async def list_clients(
                     status = "expired"
                     end_date = expired_membership.ends_on
                     plan = expired_membership.plan_code
+                # Fall back to POS end date if no membership exists
+                elif c.pos_end_date:
+                    end_date = c.pos_end_date
+                    plan = "POS"
+                    if c.pos_end_date < today:
+                        status = "expired"
+                    elif c.pos_end_date <= expiring_threshold:
+                        status = "expiring"
+                    else:
+                        status = "active"
 
             client_responses.append(ClientResponse(
                 id=str(c.id),
@@ -313,8 +323,8 @@ async def list_clients(
 
 
 @router.get("/import/template")
-async def download_import_template(current_user: User = Depends(get_current_user)):
-    """Download CSV template for bulk client import"""
+async def download_import_template():
+    """Download CSV template for bulk client import (public endpoint)"""
     output = io.StringIO()
     writer = csv.writer(output)
 

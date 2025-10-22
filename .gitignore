@@ -20,8 +20,13 @@ pip-delete-this-directory.txt
 .DS_Store
 
 # Environment variables
-.env*
+.env
+.env.local
+.env.production
+.env.*.local
 !.env.example
+!.env.dev.example
+!.env.production.example
 
 # Build outputs
 dist/

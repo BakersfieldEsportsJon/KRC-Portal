@@ -5,12 +5,14 @@ Handles password setup and reset flows
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel
 from datetime import datetime
 import logging
 
 from core.database import AsyncSessionLocal
-from auth_workaround import User, get_current_user, pwd_context
+from core.config import settings
+from auth_workaround import get_current_user, pwd_context
+from models import User
 from models_password_reset import PasswordResetToken
 from modules.core_auth.utils import is_strong_password
 
@@ -48,14 +50,11 @@ async def send_password_setup_email(user_email: str, token: str, base_url: str):
     Send password setup email to user
 
     TODO: Integrate with actual email service (SendGrid, AWS SES, etc.)
-    For now, just log the link
+    For now, log an audit entry so we can confirm delivery triggered
     """
     setup_link = f"{base_url}/setup-password?token={token}"
 
-    logger.info(f"Password setup link for {user_email}: {setup_link}")
-    logger.info("=" * 80)
-    logger.info(f"SETUP LINK: {setup_link}")
-    logger.info("=" * 80)
+    logger.info("Password setup email triggered for %s", user_email)
 
     # TODO: Replace with actual email sending
     # email_service.send(
@@ -74,10 +73,7 @@ async def send_password_reset_email(user_email: str, token: str, base_url: str):
     """
     reset_link = f"{base_url}/setup-password?token={token}"
 
-    logger.info(f"Password reset link for {user_email}: {reset_link}")
-    logger.info("=" * 80)
-    logger.info(f"RESET LINK: {reset_link}")
-    logger.info("=" * 80)
+    logger.info("Password reset email triggered for %s", user_email)
 
     # TODO: Replace with actual email sending
     # email_service.send(
@@ -226,11 +222,15 @@ async def initiate_password_reset(
 
     logger.info(f"Password reset initiated by admin {current_user.username} for user {target_user.username or target_user.email}")
 
-    return MessageResponse(
+    response_payload = MessageResponse(
         message=f"Password reset link generated for {target_user.email}",
-        detail="Share this link with the user to reset their password. Link valid for 24 hours.",
-        reset_link=reset_link
+        detail="Share this link with the user to reset their password. Link valid for 24 hours."
     )
+
+    if settings.is_development:
+        response_payload.reset_link = reset_link
+
+    return response_payload
 
 
 @router.get("/validate-token/{token}")

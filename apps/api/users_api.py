@@ -10,7 +10,8 @@ from datetime import datetime
 from passlib.context import CryptContext
 
 from core.database import AsyncSessionLocal
-from auth_workaround import get_current_user, User
+from auth_workaround import get_current_user
+from models import User
 
 router = APIRouter(prefix="/users", tags=["users"])
 pwd_context = CryptContext(schemes=["bcrypt", "argon2"], deprecated="auto")
@@ -197,7 +198,6 @@ async def update_user(
                 detail="Username already registered"
             )
         user.username = user_data.username
-        user.email = f"{user_data.username}@example.com"  # Update placeholder email
 
     if user_data.password:
         user.password_hash = pwd_context.hash(user_data.password)

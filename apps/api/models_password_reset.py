@@ -25,7 +25,8 @@ class PasswordResetToken(Base):
     created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
 
     # Relationships
-    user = relationship("User", foreign_keys=[user_id], back_populates="password_tokens")
+    # Note: back_populates removed because UserWorkaround doesn't define password_tokens relationship
+    user = relationship("User", foreign_keys=[user_id])
     created_by_user = relationship("User", foreign_keys=[created_by])
 
     @staticmethod

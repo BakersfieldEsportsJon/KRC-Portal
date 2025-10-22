@@ -27,7 +27,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .getCurrentUser()
         .then((userData) => {
           setUser(userData)
-          // Apply dark mode based on user preference
+          // Apply dark mode based on user preference (defaults to true)
           if (userData.dark_mode) {
             document.documentElement.classList.add('dark')
           } else {
@@ -38,9 +38,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           // Token is invalid, remove it
           localStorage.removeItem('access_token')
           localStorage.removeItem('refresh_token')
+          // When not logged in, respect login page dark mode preference (defaults to dark)
+          const loginDarkMode = localStorage.getItem('login_dark_mode')
+          const isDark = loginDarkMode === null ? true : loginDarkMode === 'true'
+          if (isDark) {
+            document.documentElement.classList.add('dark')
+          } else {
+            document.documentElement.classList.remove('dark')
+          }
         })
         .finally(() => setLoading(false))
     } else {
+      // When not logged in, respect login page dark mode preference (defaults to dark)
+      const loginDarkMode = localStorage.getItem('login_dark_mode')
+      const isDark = loginDarkMode === null ? true : loginDarkMode === 'true'
+      if (isDark) {
+        document.documentElement.classList.add('dark')
+      } else {
+        document.documentElement.classList.remove('dark')
+      }
       setLoading(false)
     }
   }, [])
@@ -57,6 +73,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const user = await apiService.getCurrentUser()
       setUser(user)
 
+      // Apply user's dark mode preference immediately after login
+      if (user.dark_mode) {
+        document.documentElement.classList.add('dark')
+      } else {
+        document.documentElement.classList.remove('dark')
+      }
+
       toast.success('Successfully logged in!')
     } catch (error) {
       console.error('Login error:', error)
@@ -68,6 +91,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem('access_token')
     localStorage.removeItem('refresh_token')
     setUser(null)
+
+    // After logout, restore login page dark mode preference
+    const loginDarkMode = localStorage.getItem('login_dark_mode')
+    const isDark = loginDarkMode === null ? true : loginDarkMode === 'true'
+    if (isDark) {
+      document.documentElement.classList.add('dark')
+    } else {
+      document.documentElement.classList.remove('dark')
+    }
+
     toast.success('Successfully logged out')
   }
 
@@ -83,21 +116,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!user) return
 
     const newDarkMode = !user.dark_mode
+    const previousDarkMode = user.dark_mode
+
+    // Optimistically update the UI immediately
+    setUser({ ...user, dark_mode: newDarkMode })
+
+    // Apply dark mode to document immediately
+    if (newDarkMode) {
+      document.documentElement.classList.add('dark')
+    } else {
+      document.documentElement.classList.remove('dark')
+    }
 
     try {
+      // Update on server
       const updatedUser = await apiService.updateDarkMode(newDarkMode)
       setUser(updatedUser)
+      toast.success(`Dark mode ${newDarkMode ? 'enabled' : 'disabled'}`)
+    } catch (error) {
+      console.error('Failed to toggle dark mode:', error)
 
-      // Apply dark mode to document
-      if (newDarkMode) {
+      // Rollback on failure
+      setUser({ ...user, dark_mode: previousDarkMode })
+
+      // Revert dark mode to document
+      if (previousDarkMode) {
         document.documentElement.classList.add('dark')
       } else {
         document.documentElement.classList.remove('dark')
       }
 
-      toast.success(`Dark mode ${newDarkMode ? 'enabled' : 'disabled'}`)
-    } catch (error) {
-      console.error('Failed to toggle dark mode:', error)
       toast.error('Failed to toggle dark mode')
     }
   }

@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from 'react-query'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import apiService from '../services/api'
 import { Plus, Search, X, Upload, Edit, Filter, LogIn } from 'lucide-react'
 import { ClientForm } from '../types'
@@ -9,9 +9,18 @@ import { useAuth } from '../hooks/useAuth'
 
 export default function ClientsPage() {
   const { isAdmin } = useAuth()
+  const [searchParams] = useSearchParams()
   const [searchQuery, setSearchQuery] = useState('')
   const [showAddModal, setShowAddModal] = useState(false)
   const [statusFilter, setStatusFilter] = useState<string>('all')
+
+  // Read filter from URL query parameter on mount
+  useEffect(() => {
+    const filterParam = searchParams.get('filter')
+    if (filterParam && ['active', 'expiring', 'expired', 'none'].includes(filterParam)) {
+      setStatusFilter(filterParam)
+    }
+  }, [searchParams])
   const [formData, setFormData] = useState<ClientForm>({
     first_name: '',
     last_name: '',

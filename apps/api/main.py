@@ -69,7 +69,8 @@ async def lifespan(app: FastAPI):
 
     # Create database tables
     async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
+        await conn.run_sync(Base.metadata.create_all, checkfirst=True)
+    logger.info("Database tables verified/created")
 
     # Initialize module registry
     module_registry = ModuleRegistry()

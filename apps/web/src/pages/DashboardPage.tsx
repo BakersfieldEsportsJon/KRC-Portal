@@ -148,7 +148,7 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Expiring Memberships Alert */}
+      {/* Expiring Clients Alert */}
       {(membershipStats?.expiring_30_days ?? 0) > 0 && (
         <div className="mt-8">
           <div className="bg-yellow-50 border border-yellow-200 rounded-md p-4">
@@ -158,22 +158,22 @@ export default function DashboardPage() {
               </div>
               <div className="ml-3">
                 <h3 className="text-sm font-medium text-yellow-800">
-                  Memberships Expiring Soon
+                  Clients Expiring Soon
                 </h3>
                 <div className="mt-2 text-sm text-yellow-700">
                   <p>
-                    {membershipStats?.expiring_30_days} memberships are expiring within the next 30 days.
+                    {membershipStats?.expiring_30_days} clients have memberships expiring within the next 30 days.
                     Consider reaching out to these members for renewal.
                   </p>
                 </div>
                 <div className="mt-4">
                   <div className="-mx-2 -my-1.5 flex">
-                    <a
-                      href="/memberships"
+                    <Link
+                      to="/clients?filter=expiring"
                       className="bg-yellow-50 px-2 py-1.5 rounded-md text-sm font-medium text-yellow-800 hover:bg-yellow-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-yellow-50 focus:ring-yellow-600"
                     >
-                      View expiring memberships
-                    </a>
+                      View expiring clients
+                    </Link>
                   </div>
                 </div>
               </div>
