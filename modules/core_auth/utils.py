@@ -88,7 +88,7 @@ def is_strong_password(password: str) -> tuple[bool, str]:
     Check if password meets strength requirements
 
     Requirements:
-    - Minimum 12 characters
+    - Minimum 8 characters
     - At least one uppercase letter
     - At least one lowercase letter
     - At least one digit
@@ -104,9 +104,9 @@ def is_strong_password(password: str) -> tuple[bool, str]:
         "123123", "654321", "superman", "qazwsx", "michael", "football"
     ]
 
-    # Minimum 12 characters
-    if len(password) < 12:
-        return False, "Password must be at least 12 characters long"
+    # Minimum 8 characters
+    if len(password) < 8:
+        return False, "Password must be at least 8 characters long"
 
     # Check for common passwords
     if password.lower() in COMMON_PASSWORDS:

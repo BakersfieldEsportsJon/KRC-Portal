@@ -38,7 +38,7 @@
    - You'll be prompted on first login
    - Choose a strong password you can remember
    - Must include:
-     - At least 12 characters
+     - At least 8 characters
      - Uppercase letters (A-Z)
      - Lowercase letters (a-z)
      - Numbers (0-9)

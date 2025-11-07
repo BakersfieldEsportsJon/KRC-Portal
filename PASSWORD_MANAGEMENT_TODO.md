@@ -186,7 +186,7 @@ To get started, please set up your password by clicking the link below:
 This link will expire in 24 hours.
 
 Password Requirements:
-- At least 12 characters long
+- At least 8 characters long
 - Must contain uppercase and lowercase letters
 - Must contain at least one number
 - Must contain at least one special character (!@#$%^&*()_+-=[]{}|;:,.<>?)

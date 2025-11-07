@@ -39,10 +39,10 @@ export default function PasswordSetupPage() {
 
   // Password strength indicator
   const getPasswordStrength = (pwd: string) => {
-    if (pwd.length < 12) return { strength: 'weak', color: 'text-red-600', message: 'Too short (min 12 chars)' }
+    if (pwd.length < 8) return { strength: 'weak', color: 'text-red-600', message: 'Too short (min 8 chars)' }
 
     const checks = {
-      length: pwd.length >= 12,
+      length: pwd.length >= 8,
       upper: /[A-Z]/.test(pwd),
       lower: /[a-z]/.test(pwd),
       number: /[0-9]/.test(pwd),
@@ -143,7 +143,7 @@ export default function PasswordSetupPage() {
                 <input
                   {...register('password', {
                     required: 'Password is required',
-                    minLength: { value: 12, message: 'Password must be at least 12 characters' },
+                    minLength: { value: 8, message: 'Password must be at least 8 characters' },
                     pattern: {
                       value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{}|;:,.<>?])/,
                       message: 'Password must contain uppercase, lowercase, number, and special character'
@@ -217,12 +217,12 @@ export default function PasswordSetupPage() {
             </h3>
             <ul className="space-y-1 text-sm text-blue-800 dark:text-blue-400">
               <li className="flex items-start">
-                {password.length >= 12 ? (
+                {password.length >= 8 ? (
                   <CheckCircle className="h-4 w-4 text-green-600 mr-2 mt-0.5 flex-shrink-0" />
                 ) : (
                   <XCircle className="h-4 w-4 text-gray-400 mr-2 mt-0.5 flex-shrink-0" />
                 )}
-                At least 12 characters
+                At least 8 characters
               </li>
               <li className="flex items-start">
                 {/[A-Z]/.test(password) ? (

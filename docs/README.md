@@ -469,7 +469,7 @@ docker-compose exec postgres psql -U crm_user crm_db -c "SELECT COUNT(*) FROM cl
 
 ### Password Requirements
 
-- **Minimum 12 characters**
+- **Minimum 8 characters**
 - **Uppercase and lowercase letters**
 - **At least one number**
 - **At least one special character**

@@ -488,7 +488,7 @@ exit()
 **⚠️ IMPORTANT:** Change the passwords to something secure!
 
 **Password Requirements:**
-- Minimum 12 characters
+- Minimum 8 characters
 - Mix of uppercase and lowercase
 - Include numbers
 - Include special characters

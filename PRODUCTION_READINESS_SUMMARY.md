@@ -71,7 +71,7 @@ All **3 CRITICAL** vulnerabilities have been FIXED:
 #### 6. HIGH-005: Weak Password Requirements ✅
 - **Issue:** Only 8 characters required, no special characters
 - **Fix:**
-  - Increased minimum to 12 characters
+  - Minimum set to 8 characters with mixed character requirements
   - Now requires special characters
   - Blocks common passwords (password123, etc.)
   - Prevents sequential characters (123, abc)
