@@ -3,7 +3,7 @@ Central models file to avoid ORM conflicts
 All models defined in one place so SQLAlchemy doesn't get confused
 """
 from sqlalchemy import Column, Integer, String, DateTime, Date, Text, Boolean, ForeignKey, Table, Enum
-from sqlalchemy.sql import func
+from sqlalchemy.sql import func, expression
 from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.orm import relationship
 import uuid
@@ -35,6 +35,12 @@ class User(Base):
     mfa_secret = Column(String(255), nullable=True)
     is_active = Column(Boolean, default=True, nullable=False)
     dark_mode = Column(Boolean, default=True, nullable=False)
+    password_setup_required = Column(
+        Boolean,
+        default=True,
+        server_default=expression.true(),
+        nullable=False,
+    )
     created_at = Column(DateTime(timezone=True), nullable=False)
     updated_at = Column(DateTime(timezone=True), nullable=False)
 
