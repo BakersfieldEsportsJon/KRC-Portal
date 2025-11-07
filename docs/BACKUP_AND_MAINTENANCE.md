@@ -854,7 +854,7 @@ With daily backups at 2 AM, worst case is losing one day of data.
 ### Security Best Practices
 
 1. **Strong passwords:**
-   - Minimum 12 characters
+   - Minimum 8 characters
    - Password manager for storage
    - Regular rotation
 

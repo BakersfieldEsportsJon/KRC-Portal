@@ -29,7 +29,7 @@ openssl rand -base64 32
 - ✅ Server-side validation
 - ✅ Secure password storage
 - ✅ Forced password change on first login for new users
-- ✅ Strong password requirements enforced (12+ chars, mixed case, numbers, symbols)
+- ✅ Strong password requirements enforced (8+ chars, mixed case, numbers, symbols)
 - ✅ Real-time password strength indicator in UI
 - ✅ Temporary password support for local hosting (no email required)
 
@@ -38,8 +38,8 @@ openssl rand -base64 32
 # modules/core_auth/utils.py - is_strong_password()
 def is_strong_password(password: str) -> tuple[bool, str]:
     """Validate password meets security requirements"""
-    if len(password) < 12:
-        return False, "Password must be at least 12 characters long"
+    if len(password) < 8:
+        return False, "Password must be at least 8 characters long"
     if not any(c.isupper() for c in password):
         return False, "Password must contain at least one uppercase letter"
     if not any(c.islower() for c in password):
