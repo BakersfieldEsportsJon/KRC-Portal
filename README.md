@@ -63,7 +63,7 @@ A production-ready Customer Relationship Management and Check-in System built fo
 1. **Clone the repository**
    ```bash
    git clone <repository-url>
-   cd CRM
+   cd KRC-Portal
    ```
 
 2. **Quick start (automated)**
