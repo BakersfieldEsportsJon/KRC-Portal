@@ -64,7 +64,7 @@ class UserResponse(BaseModel):
             role=obj.role,
             is_active=obj.is_active,
             dark_mode=obj.dark_mode,
-            password_setup_required=getattr(obj, 'password_setup_required', False),
+            password_setup_required=obj.password_setup_required,
             created_at=obj.created_at,
             updated_at=obj.updated_at
         )
