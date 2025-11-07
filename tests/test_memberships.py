@@ -189,16 +189,46 @@ class TestMemberships:
         data = response.json()
         assert isinstance(data, list)
 
-    async def test_get_membership_stats(self, test_client: AsyncClient, staff_auth_headers):
+    async def test_get_membership_stats(self, test_client: AsyncClient, staff_auth_headers, test_session, test_membership_data):
         """Test retrieving membership statistics"""
-        response = await test_client.get("/api/v1/memberships/stats",
+        from modules.core_clients.models import Client
+        from modules.memberships.models import Membership
+
+        today = date.today()
+
+        # Create an expired membership to ensure the expired branch is exercised
+        expired_client = Client(
+            first_name="Expired",
+            last_name="Member",
+            email="expired.member@example.com",
+            phone="5550001111",
+            external_ids={"member_code": "EXPIRED001"}
+        )
+        test_session.add(expired_client)
+        await test_session.commit()
+        await test_session.refresh(expired_client)
+
+        expired_membership = Membership(
+            client_id=expired_client.id,
+            plan_code="limited",
+            starts_on=today - timedelta(days=60),
+            ends_on=today - timedelta(days=10),
+            notes="Expired membership"
+        )
+        test_session.add(expired_membership)
+        await test_session.commit()
+
+        response = await test_client.get(
+            "/api/v1/memberships/stats",
             headers=staff_auth_headers
         )
 
         assert response.status_code == 200
         data = response.json()
-        assert "total_active" in data
-        assert "total_expired" in data
-        assert "total_pending" in data
-        assert "expiring_30_days" in data
-        assert "plans" in data
+
+        assert set(data.keys()) == {"total_active", "expiring_30_days", "expired", "plans"}
+        # test_membership_data fixture creates one active membership expiring in 30 days
+        assert data["total_active"] == 1
+        assert data["expiring_30_days"] == 1
+        assert data["expired"] == 1
+        assert data["plans"] == {"unlimited": 1}
