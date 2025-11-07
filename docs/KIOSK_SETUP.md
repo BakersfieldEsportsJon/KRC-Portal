@@ -127,7 +127,7 @@ Installation:
 **Floor Stand:**
 ```
 Pros:
-- Portable/moveable
+- Portable/movable
 - No wall damage
 - Easy installation
 
