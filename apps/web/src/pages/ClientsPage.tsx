@@ -95,11 +95,26 @@ export default function ClientsPage() {
       return apiService.api.post('/clients/import', formData)
     },
     {
-      onSuccess: () => {
+      onSuccess: (response) => {
+        const { created_count, errors } = response.data
+
         queryClient.invalidateQueries('clients')
         setShowImportModal(false)
         setImportFile(null)
-        toast.success('Clients imported successfully')
+
+        if (created_count > 0) {
+          toast.success(`Successfully imported ${created_count} client${created_count === 1 ? '' : 's'}`)
+        }
+
+        if (errors && errors.length > 0) {
+          // Show errors in a more visible way
+          const errorMessage = `Import completed with errors:\n${errors.join('\n')}`
+          toast.error(errorMessage, { duration: 10000 })
+        }
+
+        if (created_count === 0 && (!errors || errors.length === 0)) {
+          toast.error('No clients were imported from the CSV file')
+        }
       },
       onError: () => {
         toast.error('Failed to import clients')
